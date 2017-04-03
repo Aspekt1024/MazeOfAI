@@ -15,30 +15,32 @@ public class Pathfinder : MonoBehaviour {
         target = GameObject.Find("Player").transform;
     }
 
-    private void Update()
+    public List<PathNode> GetPath(Vector3 startPos, Vector3 targetPos)
     {
-        FindPath(seeker.position, target.position);
+        FindPath(startPos, targetPos);
+        return grid.path;
     }
-
+    
     private void FindPath(Vector3 startPos, Vector3 targetPos)
     {
         PathNode startNode = grid.GetNodeFromWorldPoint(startPos);
         PathNode targetNode = grid.GetNodeFromWorldPoint(targetPos);
 
-        List<PathNode> openSet = new List<PathNode>();
+        Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
         HashSet<PathNode> closedSet = new HashSet<PathNode>();
         openSet.Add(startNode);
 
         while (openSet.Count > 0)
         {
-            PathNode currentNode = openSet[0];
+            PathNode currentNode = openSet.RemoveFirst();
+            /* This is kept for educational reference. The Heap<T> class replaces the need for this unoptimised code
             for (int i = 1; i < openSet.Count; i++)
             {
                 if (openSet[i].fCost < currentNode.fCost || (openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost))
                     currentNode = openSet[i];
             }
+            openSet.Remove(currentNode);*/
 
-            openSet.Remove(currentNode);
             closedSet.Add(currentNode);
 
             if (currentNode == targetNode)
@@ -59,6 +61,8 @@ public class Pathfinder : MonoBehaviour {
 
                     if (!openSet.Contains(neighbour))
                         openSet.Add(neighbour);
+                    else
+                        openSet.UpdateItem(neighbour);
                 }
             }
         }

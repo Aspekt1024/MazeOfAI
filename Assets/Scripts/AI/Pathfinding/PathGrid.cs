@@ -8,7 +8,7 @@ public class PathGrid : MonoBehaviour {
     public Vector2 gridWorldSize;
     public float nodeRadius;
     public PathNode[,] grid;
-    public List<PathNode> path; // todo delete
+    public List<PathNode> path;
 
     private float nodeDiameter;
     private int gridSizeX;
@@ -21,6 +21,11 @@ public class PathGrid : MonoBehaviour {
         int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
         return grid[x, y];
+    }
+
+    public int MaxSize
+    {
+        get { return gridSizeX * gridSizeY; }
     }
 
     public List<PathNode> GetNeighbours(PathNode node)
