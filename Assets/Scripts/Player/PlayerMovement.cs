@@ -8,7 +8,6 @@ public class PlayerMovement : MonoBehaviour {
 
     public float speed = 5f;
     
-    private float camRayLength = 100f;
     private Rigidbody body;
     private InputHandler input;
 

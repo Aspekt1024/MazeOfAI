@@ -7,12 +7,13 @@ public class NPC : MonoBehaviour {
     public float speed = 5f;
 
     private AIMovement movement;
-    private Pathfinder pathFinder;
     private PathGrid grid;
     private Level level;
     private Transform player;
 
-    private List<PathNode> path;
+    private Vector3[] path;
+    private int targetIndex;
+    private Transform target;
 
     private void Awake()
     {
@@ -23,7 +24,6 @@ public class NPC : MonoBehaviour {
         player = GameObject.Find("Player").transform;
 
         movement = gameObject.AddComponent<AIMovement>();
-        pathFinder = gameObject.AddComponent<Pathfinder>();
     }
 
 
@@ -43,31 +43,63 @@ public class NPC : MonoBehaviour {
             yield return null;
         }
         CalculatePath();
-
-        waitTime = 0f;
-        while (waitTime < timeBeforeStart)
-        {
-            waitTime += Time.deltaTime;
-            yield return null;
-        }
-        StartMovement();
     }
 
     private void CalculatePath()
     {
-        // TODO this should only be called once, but we will want to call it multiple times throughout the game
         grid.CreateGrid(level);
-        path = pathFinder.GetPath(transform.position, player.position);
+        target = player;
+        PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
     }
 
-    private void StartMovement()
+    public void OnPathFound(Vector3[] newPath, bool pathSuccessful)
     {
-
+        if (pathSuccessful)
+        {
+            path = newPath;
+            StopCoroutine("FollowPath");
+            StartCoroutine("FollowPath");
+        }
     }
 
-    // Update is called once per frame
-    void Update ()
+    private IEnumerator FollowPath()
     {
+        Vector3 currentWayPoint = path[0];
 
+        while (true)
+        {
+            if (transform.position.x == currentWayPoint.x && transform.position.z == currentWayPoint.z)
+            {
+                targetIndex++;
+                if (targetIndex >= path.Length)
+                {
+                    yield break;
+                }
+                currentWayPoint = path[targetIndex];
+            }
+            transform.position = Vector3.MoveTowards(transform.position, new Vector3(currentWayPoint.x, transform.position.y, currentWayPoint.z), speed * Time.deltaTime);
+            yield return null;
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (path != null)
+        {
+            for (int i = targetIndex; i < path.Length; i++)
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawCube(path[i], new Vector3(0.3f, 0.01f, 0.3f));
+
+                if (i == targetIndex)
+                {
+                    Gizmos.DrawLine(transform.position, path[i]);
+                }
+                else
+                {
+                    Gizmos.DrawLine(path[i - 1], path[i]);
+                }
+            }
+        }
     }
 }

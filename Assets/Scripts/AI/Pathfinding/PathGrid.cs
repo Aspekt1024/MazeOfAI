@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PathGrid : MonoBehaviour {
-    
+
+    public bool DisplayGrid;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
     public PathNode[,] grid;
-    public List<PathNode> path;
 
     private float nodeDiameter;
     private int gridSizeX;
@@ -47,21 +47,21 @@ public class PathGrid : MonoBehaviour {
         }
         return neighbours;
     }
+
+    private void Awake()
+    {
+        gameObject.AddComponent<PathRequestManager>();
+    }
     
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
 
-        if (grid != null)
+        if (grid != null && DisplayGrid)
         {
             foreach(PathNode node in grid)
             {
                 Gizmos.color = (node.walkable ? Color.white : Color.red);
-                if (path != null)
-                {
-                    if (path.Contains(node))
-                        Gizmos.color = Color.cyan;
-                }
                 Gizmos.DrawCube(node.worldPosition, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
             }
         }
