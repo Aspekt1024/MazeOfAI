@@ -56,7 +56,7 @@ public class Pathfinder : MonoBehaviour {
                 {
                     if (!neighbour.walkable || closedSet.Contains(neighbour)) continue;
 
-                    int newMoveCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
+                    int newMoveCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour) + currentNode.movementPenalty;
                     if (newMoveCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
                     {
                         neighbour.gCost = newMoveCostToNeighbour;

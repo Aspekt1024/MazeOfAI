@@ -7,10 +7,12 @@ public class MazeGenerator {
     public class MazeCell
     {
         public bool visited;
+        public int row;
+        public int col;
         public GameObject northWall;
         public GameObject southWall;
         public GameObject eastWall;
-        public GameObject westWall;
+        public GameObject westWall;// TODO Don't create these up front. make these booleans and create on deployment.
     }
 
     private PathGrid grid;

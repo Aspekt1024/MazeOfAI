@@ -6,23 +6,23 @@ public class PathNode : IHeapItem<PathNode> {
 
     public bool walkable;
     public Vector3 worldPosition;
-
-    public int gCost;
-    public int hCost;
-
     public int gridX;
     public int gridY;
+    public int movementPenalty;
 
     public PathNode parent;
-
+    public int gCost;
+    public int hCost;
+    
     private int heapIndex;
 
-    public PathNode(bool canWalk, Vector3 worldPos, int xIndex, int yIndex)
+    public PathNode(bool canWalk, Vector3 worldPos, int xIndex, int yIndex, int penalty)
     {
         walkable = canWalk;
         worldPosition = worldPos;
         gridX = xIndex;
         gridY = yIndex;
+        movementPenalty = penalty;
     }
 
     public int fCost

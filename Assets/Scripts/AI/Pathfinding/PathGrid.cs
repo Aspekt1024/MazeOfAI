@@ -8,11 +8,14 @@ public class PathGrid : MonoBehaviour {
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
-    public PathNode[,] grid;
 
+    private LayerMask walkableMask;
+    private PathNode[,] grid;
     private float nodeDiameter;
     private int gridSizeX;
     private int gridSizeY;
+
+    private Dictionary<int, int> TerrainPenaltyDict = new Dictionary<int, int>();
 
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
     {
@@ -51,6 +54,17 @@ public class PathGrid : MonoBehaviour {
     private void Awake()
     {
         gameObject.AddComponent<PathRequestManager>();
+        SetupTerrainPenalties();
+    }
+
+    private void SetupTerrainPenalties()
+    {
+        TerrainPenaltyDict.Add(LayerMask.NameToLayer("TemporalField"), 20);
+        
+        foreach (var terrainPenaltyPair in TerrainPenaltyDict)
+        {
+            walkableMask |= 1 << terrainPenaltyPair.Key;
+        }
     }
     
     private void OnDrawGizmos()
@@ -93,7 +107,20 @@ public class PathGrid : MonoBehaviour {
             {
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                 bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
-                grid[x, y] = new PathNode(walkable, worldPoint, x, y);
+
+                int movementPenalty = 0;
+
+                if (walkable)
+                {
+                    Ray ray = new Ray(worldPoint + Vector3.up * 100f, Vector3.down);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit, 200f, walkableMask))
+                    {
+                        movementPenalty = TerrainPenaltyDict[hit.collider.gameObject.layer];
+                    }
+                }
+
+                grid[x, y] = new PathNode(walkable, worldPoint, x, y, movementPenalty);
             }
         }
     }

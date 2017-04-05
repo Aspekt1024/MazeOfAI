@@ -13,7 +13,7 @@ public class MazeWallPlacement
 
     public const float wallLength = 2f;
     public const float wallWidth = 0.5f;
-    public const float wallHeight = 2f;
+    public const float wallHeight = 0.5f;
     
     public void Load()
     {
