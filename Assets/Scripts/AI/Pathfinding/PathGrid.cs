@@ -8,12 +8,16 @@ public class PathGrid : MonoBehaviour {
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
+    public int obstacleProximityPenalty = 10;
 
     private LayerMask walkableMask;
     private PathNode[,] grid;
     private float nodeDiameter;
     private int gridSizeX;
     private int gridSizeY;
+
+    private int penaltyMin = int.MaxValue;
+    private int penaltyMax = int.MinValue;
 
     private Dictionary<int, int> TerrainPenaltyDict = new Dictionary<int, int>();
 
@@ -75,7 +79,9 @@ public class PathGrid : MonoBehaviour {
         {
             foreach(PathNode node in grid)
             {
-                Gizmos.color = (node.walkable ? Color.white : Color.red);
+                Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMin, penaltyMax, node.movementPenalty));
+
+                Gizmos.color = (node.walkable ? Gizmos.color : Color.red);
                 Gizmos.DrawCube(node.worldPosition, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
             }
         }
@@ -84,10 +90,10 @@ public class PathGrid : MonoBehaviour {
     public void SetupGrid(int rows, int cols)
     {
         float length = MazeWallPlacement.wallLength;
-        nodeRadius = length / 4f;
+        nodeRadius = length / 12f;
         nodeDiameter = nodeRadius * 2;
 
-        const int numExtraNodes = 10;
+        const int numExtraNodes = 30;
         gridWorldSize = new Vector2(length * (cols + 0.5f), length * (rows + 0.5f) + numExtraNodes * nodeDiameter);
         transform.position = new Vector3(MazeWallPlacement.xStart + length * (cols - 1) / 2f, 0f, MazeWallPlacement.zStart + length * (rows - 1) / 2f);
 
@@ -109,18 +115,73 @@ public class PathGrid : MonoBehaviour {
                 bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
 
                 int movementPenalty = 0;
-
-                if (walkable)
+                
+                Ray ray = new Ray(worldPoint + Vector3.up * 100f, Vector3.down);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 200f, walkableMask))
                 {
-                    Ray ray = new Ray(worldPoint + Vector3.up * 100f, Vector3.down);
-                    RaycastHit hit;
-                    if (Physics.Raycast(ray, out hit, 200f, walkableMask))
-                    {
-                        movementPenalty = TerrainPenaltyDict[hit.collider.gameObject.layer];
-                    }
+                    movementPenalty = TerrainPenaltyDict[hit.collider.gameObject.layer];
+                }
+
+                if (!walkable)
+                {
+                    movementPenalty += obstacleProximityPenalty;
                 }
 
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y, movementPenalty);
+            }
+        }
+        BlurPenalties(1);
+    }
+
+    private void BlurPenalties(int blurSize)
+    {
+        int kernelSize = 2 * blurSize + 1;
+        int kernelExtents = blurSize;
+
+        int[,] hPassPenalties = new int[gridSizeX, gridSizeY];
+        int[,] vPassPenalties = new int[gridSizeX, gridSizeY];
+
+        for (int y = 0; y < gridSizeY; y++)
+        {
+            for (int x = -kernelExtents; x <= kernelExtents; x++)
+            {
+                int sampleX = Mathf.Clamp(x, 0, gridSizeX - 1);
+                hPassPenalties[0, y] += grid[sampleX, y].movementPenalty;
+            }
+
+            for (int x = 1; x < gridSizeX; x++)
+            {
+                int removeIndex = Mathf.Clamp(x - kernelExtents - 1, 0, gridSizeX - 1);
+                int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1);
+                hPassPenalties[x, y] = hPassPenalties[x - 1, y] - grid[removeIndex, y].movementPenalty + grid[addIndex, y].movementPenalty;
+            }
+        }
+
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            for (int y = -kernelExtents; y <= kernelExtents; y++)
+            {
+                int sampleY = Mathf.Clamp(y, 0, gridSizeY - 1);
+                vPassPenalties[x, 0] += hPassPenalties[x, sampleY];
+            }
+
+            int blurredPenalty = Mathf.RoundToInt((float)vPassPenalties[x, 0] / (kernelSize * kernelSize));
+            grid[x, 0].movementPenalty = blurredPenalty;
+
+            for (int y = 1; y < gridSizeY; y++)
+            {
+                int removeIndex = Mathf.Clamp(y - kernelExtents - 1, 0, gridSizeY - 1);
+                int addIndex = Mathf.Clamp(y + kernelExtents, 0, gridSizeY - 1);
+                vPassPenalties[x, y] = vPassPenalties[x, y - 1] - hPassPenalties[x, removeIndex] + hPassPenalties[x, addIndex];
+
+                blurredPenalty = Mathf.RoundToInt((float)vPassPenalties[x, y] / (kernelSize * kernelSize));
+                grid[x, y].movementPenalty = blurredPenalty;
+
+                if (blurredPenalty > penaltyMax)
+                    penaltyMax = blurredPenalty;
+                if (blurredPenalty < penaltyMin)
+                    penaltyMin = blurredPenalty;
             }
         }
     }
