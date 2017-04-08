@@ -7,7 +7,7 @@ public class NPC : MonoBehaviour {
     public float speed = 15f;
     public float turnDist = 0.5f;
     public float turnSpeed = 3f;
-    public float stoppingDist = 1.5f;
+    public float stoppingDist = 2.5f;
 
     private AIMovement movement;
     private PathGrid grid;
@@ -17,8 +17,8 @@ public class NPC : MonoBehaviour {
     private Transform target;
     private Path path;
 
-    private const float pathUpdateMoveThreshold = 0.5f;
-    private const float minPathUpdateTime = 0.2f;
+    private const float pathUpdateMoveThreshold = 0.7f;
+    private const float minPathUpdateTime = 0.25f;
 
     private void Awake()
     {
@@ -40,13 +40,8 @@ public class NPC : MonoBehaviour {
 
     private IEnumerator SetupNPC()
     {
-        float waitTime = 0f;
         const float timeBeforeStart = 1f;
-        while (waitTime < timeBeforeStart)
-        {
-            waitTime += Time.deltaTime;
-            yield return null;
-        }
+        yield return new WaitForSeconds(timeBeforeStart);
         target = player;
         grid.CreateGrid(level); // TODO move out of this and into pathfinder
         StartCoroutine(UpdatePath());
@@ -56,15 +51,15 @@ public class NPC : MonoBehaviour {
     {
         float squareMoveThreshold = pathUpdateMoveThreshold * pathUpdateMoveThreshold;
         Vector3 targetOldPos = target.position;
-        PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+        PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, OnPathFound));
 
         while (true)
         {
-            if (Time.timeSinceLevelLoad < 0.3f) yield return new WaitForSeconds(0.3f);
+            if (Time.timeSinceLevelLoad < 0.5f) yield return new WaitForSeconds(0.5f);
             yield return new WaitForSeconds(minPathUpdateTime);
             if ((target.position - targetOldPos).sqrMagnitude > squareMoveThreshold)
             {
-                PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+                PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, OnPathFound));
                 targetOldPos = target.position;
             }
         }
@@ -76,9 +71,7 @@ public class NPC : MonoBehaviour {
         {
             path = new Path(waypoints, transform.position, turnDist, stoppingDist);
             StopCoroutine("FollowPath");
-
-            if (path.lookPoints.Length > 0)
-                StartCoroutine("FollowPath");
+            StartCoroutine("FollowPath");
         }
     }
 
@@ -87,7 +80,6 @@ public class NPC : MonoBehaviour {
         bool followingPath = true;
         int pathIndex = 0;
         float speedPercent = 1f;
-        transform.LookAt(path.lookPoints[0]);
 
         while (followingPath)
         {
@@ -110,14 +102,14 @@ public class NPC : MonoBehaviour {
                 if (pathIndex >= path.slowDownIndex && stoppingDist > 0)
                 {
                     speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos2D) / stoppingDist);
-                    if (speedPercent < 0.01f)
+                    if (speedPercent < 0.01f || Vector3.Distance(player.position, transform.position) < 0.8f)
                         followingPath = false;
                 }
-
-
-                Quaternion targetRotation = Quaternion.LookRotation(path.lookPoints[pathIndex] - new Vector3(pos2D.x, 0, pos2D.y));
+                
+                Quaternion targetRotation = Quaternion.LookRotation(new Vector3(path.lookPoints[pathIndex].x, 0, path.lookPoints[pathIndex].z) - new Vector3(pos2D.x, 0, pos2D.y));
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
-                transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
+                transform.rotation = Quaternion.LookRotation(new Vector3(transform.forward.x, -0.4f * speedPercent, transform.forward.z));
+                transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * speed * speedPercent;
             }
             yield return null;
         }

@@ -2,48 +2,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 public class Pathfinder : MonoBehaviour {
     
     private PathGrid grid;
-    private PathRequestManager requestManager;
+    private bool findingPath;
 
     private void Awake()
     {
         GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
         grid = scriptsObj.GetComponent<PathGrid>();
-        requestManager = scriptsObj.GetComponent<PathRequestManager>();
     }
 
-    public void StartFindPath(Vector3 startPos, Vector3 targetPos)
-    {
-        StartCoroutine(FindPath(startPos, targetPos));
-    }
+    // TODO handle generation of grid (currently in NPC)
     
-    private IEnumerator FindPath(Vector3 startPos, Vector3 targetPos)
+    public void FindPath(PathRequest request, Action<PathResult> callback)
+    {
+        StopCoroutine("PathSearch");
+        StartCoroutine(PathSearch(request, callback));
+    }
+
+    private IEnumerator PathSearch(PathRequest request, Action<PathResult> callback)
     {
         Vector3[] waypoints = new Vector3[0];
+        PathNode startNode = grid.GetNodeFromWorldPoint(request.pathStart);
+        PathNode targetNode = grid.GetNodeFromWorldPoint(request.pathEnd);
         bool pathFound = false;
 
-        PathNode startNode = grid.GetNodeFromWorldPoint(startPos);
-        PathNode targetNode = grid.GetNodeFromWorldPoint(targetPos);
+        findingPath = true;
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
 
         if (startNode.walkable && targetNode.walkable)
         {
             Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
-
+            
             while (openSet.Count > 0)
             {
                 PathNode currentNode = openSet.RemoveFirst();
-                /* This is kept for educational reference. The Heap<T> class replaces the need for this unoptimised code
-                for (int i = 1; i < openSet.Count; i++)
-                {
-                    if (openSet[i].fCost < currentNode.fCost || (openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost))
-                        currentNode = openSet[i];
-                }
-                openSet.Remove(currentNode);*/
 
                 closedSet.Add(currentNode);
 
@@ -69,14 +68,23 @@ public class Pathfinder : MonoBehaviour {
                             openSet.UpdateItem(neighbour);
                     }
                 }
+                if (sw.ElapsedMilliseconds > 6)
+                {
+                    sw.Reset();
+                    yield return null;
+                }
             }
         }
-        yield return null;
 
         if (pathFound)
+        {
             waypoints = RetracePath(startNode, targetNode);
+            pathFound = waypoints.Length > 0;
+        }
 
-        requestManager.FinishedProcessingPath(waypoints, pathFound);
+        callback(new PathResult(waypoints, pathFound, request.callback));
+        yield return null;
+        findingPath = false;
     }
 
     private int GetDistance(PathNode nodeA, PathNode nodeB)
@@ -119,5 +127,10 @@ public class Pathfinder : MonoBehaviour {
         }
         waypoints.Reverse();
         return waypoints.ToArray();
+    }
+
+    public bool IsProcessing()
+    {
+        return findingPath;
     }
 }
