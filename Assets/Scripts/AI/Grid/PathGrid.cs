@@ -10,6 +10,9 @@ public class PathGrid : MonoBehaviour {
     public float nodeRadius;
     public int obstacleProximityPenalty = 10;
 
+    [HideInInspector]
+    public bool GridGenerated;
+
     private LayerMask walkableMask;
     private PathNode[,] grid;
     private float nodeDiameter;
@@ -18,9 +21,9 @@ public class PathGrid : MonoBehaviour {
 
     private int penaltyMin = int.MaxValue;
     private int penaltyMax = int.MinValue;
-
+    
     private Dictionary<int, int> TerrainPenaltyDict = new Dictionary<int, int>();
-
+    
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
     {
         float percentX = Mathf.Clamp01((worldPos.x - transform.position.x + gridWorldSize.x / 2) / gridWorldSize.x);
@@ -169,6 +172,7 @@ public class PathGrid : MonoBehaviour {
             }
         }
         BlurPenalties(1);
+        GridGenerated = true;
     }
 
     private void BlurPenalties(int blurSize)

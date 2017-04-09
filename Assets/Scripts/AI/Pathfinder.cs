@@ -6,16 +6,24 @@ using UnityEngine;
 public class Pathfinder : MonoBehaviour {
     
     private PathGrid grid;
-    private bool findingPath;
+    private bool processingPath;
+    private bool gridGenRequested;
 
     private void Awake()
     {
         GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
         grid = scriptsObj.GetComponent<PathGrid>();
     }
-
-    // TODO handle generation of grid (currently in NPC)
     
+    private void Update()
+    {
+        if (Time.timeSinceLevelLoad < 2f || gridGenRequested) return;
+
+        gridGenRequested = true;
+        GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
+        grid.CreateGrid(scriptsObj.GetComponent<Level>());
+    }
+
     public void FindPath(PathRequest request, Action<PathResult> callback)
     {
         StopCoroutine("PathSearch");
@@ -24,28 +32,32 @@ public class Pathfinder : MonoBehaviour {
 
     private IEnumerator PathSearch(PathRequest request, Action<PathResult> callback)
     {
+        processingPath = true;
+        while (!grid.GridGenerated)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
         Vector3[] waypoints = new Vector3[0];
         PathNode targetNode = grid.GetNearestWalkableNode(request.pathEnd);
         PathNode startNode = grid.GetNearestWalkableNode(request.pathStart);
         bool pathFound = false;
-
-        findingPath = true;
-
+        
         if (startNode.walkable && targetNode.walkable)
         {
             Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
-
             yield return null;
 
-            int iter = 0;
+            int iterations = 0;
+            int maxIterations = 2000;
             while (openSet.Count > 0)
             {
-                iter++;
-                if (iter > 1000)
+                iterations++;
+                if (iterations > maxIterations)
                 {
-                    iter = 0;
+                    iterations = 0;
                     yield return null;
                 }
                 PathNode currentNode = openSet.RemoveFirst();
@@ -85,7 +97,7 @@ public class Pathfinder : MonoBehaviour {
 
         callback(new PathResult(waypoints, pathFound, request.callback));
         yield return null;
-        findingPath = false;
+        processingPath = false;
     }
 
     private int GetDistance(PathNode nodeA, PathNode nodeB)
@@ -132,6 +144,6 @@ public class Pathfinder : MonoBehaviour {
 
     public bool IsProcessing()
     {
-        return findingPath;
+        return processingPath;
     }
 }

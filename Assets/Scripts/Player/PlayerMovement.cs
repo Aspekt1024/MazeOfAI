@@ -40,5 +40,11 @@ public class PlayerMovement : MonoBehaviour {
             body.velocity = new Vector3(speed, body.velocity.y, body.velocity.z);
         }
 
+        // TODO move to player actions
+        if (input.ActionPressed(InputHandler.ActionInput.Jump))
+        {
+            Instantiate(Resources.Load("Spawnables/Capsule"), transform.position + Vector3.down * 0.6f, Quaternion.identity, transform);
+        }
+
 	}
 }
