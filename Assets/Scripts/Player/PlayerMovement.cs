@@ -6,7 +6,7 @@ using KeyboardInput = InputHandler.KeyboardInput;
 
 public class PlayerMovement : MonoBehaviour {
 
-    public float speed = 5f;
+    public float baseSpeed = 8f;
     
     private Rigidbody body;
     private InputHandler input;
@@ -22,6 +22,7 @@ public class PlayerMovement : MonoBehaviour {
 	private void Update ()
     {
         input.RefreshInputs();
+        float speed = baseSpeed * (input.KeyPressed(KeyboardInput.Run) ? 2 : 1);
         if (input.KeyPressed(KeyboardInput.Forward))
         {
             body.velocity = new Vector3(body.velocity.x, body.velocity.y, speed);

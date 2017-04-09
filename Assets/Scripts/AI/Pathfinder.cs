@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
 
 public class Pathfinder : MonoBehaviour {
     
@@ -26,31 +25,38 @@ public class Pathfinder : MonoBehaviour {
     private IEnumerator PathSearch(PathRequest request, Action<PathResult> callback)
     {
         Vector3[] waypoints = new Vector3[0];
-        PathNode startNode = grid.GetNodeFromWorldPoint(request.pathStart);
-        PathNode targetNode = grid.GetNodeFromWorldPoint(request.pathEnd);
+        PathNode targetNode = grid.GetNearestWalkableNode(request.pathEnd);
+        PathNode startNode = grid.GetNearestWalkableNode(request.pathStart);
         bool pathFound = false;
 
         findingPath = true;
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
 
         if (startNode.walkable && targetNode.walkable)
         {
             Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
-            
+
+            yield return null;
+
+            int iter = 0;
             while (openSet.Count > 0)
             {
+                iter++;
+                if (iter > 1000)
+                {
+                    iter = 0;
+                    yield return null;
+                }
                 PathNode currentNode = openSet.RemoveFirst();
-
                 closedSet.Add(currentNode);
-
+                
                 if (currentNode == targetNode)
                 {
                     pathFound = true;
                     break;
                 }
+
                 foreach (PathNode neighbour in grid.GetNeighbours(currentNode))
                 {
                     if (!neighbour.walkable || closedSet.Contains(neighbour)) continue;
@@ -67,11 +73,6 @@ public class Pathfinder : MonoBehaviour {
                         else
                             openSet.UpdateItem(neighbour);
                     }
-                }
-                if (sw.ElapsedMilliseconds > 6)
-                {
-                    sw.Reset();
-                    yield return null;
                 }
             }
         }
@@ -112,7 +113,7 @@ public class Pathfinder : MonoBehaviour {
         return waypoints;
     }
 
-    Vector3[] SimplifyPath(List<PathNode> path)
+    private Vector3[] SimplifyPath(List<PathNode> path)
     {
         List<Vector3> waypoints = new List<Vector3>();
         Vector2 directionOld = Vector2.zero;

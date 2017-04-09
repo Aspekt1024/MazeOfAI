@@ -30,6 +30,43 @@ public class PathGrid : MonoBehaviour {
         return grid[x, y];
     }
 
+    public PathNode GetNearestWalkableNode(Vector3 worldPos)
+    {
+        float percentX = Mathf.Clamp01((worldPos.x - transform.position.x + gridWorldSize.x / 2) / gridWorldSize.x);
+        float percentY = Mathf.Clamp01((worldPos.z - transform.position.z + gridWorldSize.y / 2) / gridWorldSize.y);
+        int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
+        int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
+
+        if (grid[x, y].walkable)
+            return grid[x, y];
+        else if (x > 0 && grid[x - 1, y].walkable)
+            return grid[x - 1, y];
+        else if (x < gridSizeX - 1 && grid[x + 1, y].walkable)
+            return grid[x + 1, y];
+        else if (y > 0 && grid[x, y - 1].walkable)
+            return grid[x, y - 1];
+        else if (y < gridSizeY - 1 && grid[x, y + 1].walkable)
+            return grid[x, y + 1];
+
+        for (int dX = -1; dX <= 1; dX++)
+        {
+            for (int dY = -1; dY <= 1; dY++)
+            {
+                if (x == 0 && y == 0) continue;
+
+                int checkX = x + dX;
+                int checkY = y + dY;
+
+                if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                {
+                    if (grid[checkX, checkY].walkable)
+                        return grid[checkX, checkY];
+                }
+            }
+        }
+        return grid[x, y];
+    }
+
     public int MaxSize
     {
         get { return gridSizeX * gridSizeY; }

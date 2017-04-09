@@ -51,7 +51,7 @@ public class NPC : MonoBehaviour {
     {
         float squareMoveThreshold = pathUpdateMoveThreshold * pathUpdateMoveThreshold;
         Vector3 targetOldPos = target.position;
-        PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, OnPathFound));
+        PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, gameObject, OnPathFound));
 
         while (true)
         {
@@ -59,7 +59,7 @@ public class NPC : MonoBehaviour {
             yield return new WaitForSeconds(minPathUpdateTime);
             if ((target.position - targetOldPos).sqrMagnitude > squareMoveThreshold)
             {
-                PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, OnPathFound));
+                PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, gameObject, OnPathFound));
                 targetOldPos = target.position;
             }
         }

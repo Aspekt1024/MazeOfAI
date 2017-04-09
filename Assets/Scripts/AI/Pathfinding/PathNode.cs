@@ -9,6 +9,7 @@ public class PathNode : IHeapItem<PathNode> {
     public int gridX;
     public int gridY;
     public int movementPenalty;
+    public bool closed;
 
     public PathNode parent;
     public int gCost;
@@ -23,6 +24,7 @@ public class PathNode : IHeapItem<PathNode> {
         gridX = xIndex;
         gridY = yIndex;
         movementPenalty = penalty;
+        closed = false;
     }
 
     public int fCost

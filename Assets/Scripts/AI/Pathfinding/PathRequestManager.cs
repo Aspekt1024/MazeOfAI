@@ -5,8 +5,8 @@ using UnityEngine;
 using System.Threading;
 
 public class PathRequestManager : MonoBehaviour {
-
-    private Queue<PathRequest> requests = new Queue<PathRequest>();
+    
+    private List<PathRequest> requests = new List<PathRequest>();
     private static PathRequestManager instance;
     private Pathfinder pathFinder;
 
@@ -18,16 +18,27 @@ public class PathRequestManager : MonoBehaviour {
 
     private void Update()
     {
-        if (requests.Count > 0 && !pathFinder.IsProcessing())
-        {
-            PathRequest request = requests.Dequeue();
-            instance.pathFinder.FindPath(request, FinishedProcessingPath);
-        }
+        if (requests.Count == 0 || pathFinder.IsProcessing()) return;
+
+        PathRequest request = requests[0];
+        requests.Remove(request);
+        instance.pathFinder.FindPath(request, FinishedProcessingPath);
     }
 
     public static void RequestPath(PathRequest request)
     {
-        instance.requests.Enqueue(request);
+        Queue<PathRequest> pendingRequestsSameCaller = new Queue<PathRequest>();
+        foreach (var req in instance.requests)
+        {
+            if (req.caller == request.caller)
+                pendingRequestsSameCaller.Enqueue(req);
+        }
+        while (pendingRequestsSameCaller.Count > 0)
+        {
+            instance.requests.Remove(pendingRequestsSameCaller.Dequeue());
+        }
+
+        instance.requests.Add(request);
     }
 
     public void FinishedProcessingPath(PathResult result)
@@ -55,12 +66,14 @@ public struct PathRequest
 {
     public Vector3 pathStart;
     public Vector3 pathEnd;
+    public GameObject caller;
     public Action<Vector3[], bool> callback;
 
-    public PathRequest(Vector3 start, Vector3 end, Action<Vector3[], bool> cb)
+    public PathRequest(Vector3 start, Vector3 end, GameObject callingObj, Action<Vector3[], bool> cb)
     {
         pathStart = start;
         pathEnd = end;
+        caller = callingObj;
         callback = cb;
     }
 }
