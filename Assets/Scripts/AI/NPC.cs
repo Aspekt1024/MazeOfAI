@@ -41,6 +41,7 @@ public class NPC : MonoBehaviour {
     private void Start()
     {
         StartCoroutine(SetupNPC());
+        // TODO move to another NPC spawn manager
         transform.position = new Vector3(MazeWallPlacement.xStart + 10f, 0f, MazeWallPlacement.zStart + level.numRows * MazeWallPlacement.wallLength + 3f);
     }
 

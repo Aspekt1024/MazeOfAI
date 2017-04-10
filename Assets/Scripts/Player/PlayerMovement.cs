@@ -5,24 +5,23 @@ using UnityEngine;
 using KeyboardInput = InputHandler.KeyboardInput;
 
 public class PlayerMovement : MonoBehaviour {
-
-    public float baseSpeed = 8f;
     
     private Rigidbody body;
-    private InputHandler input;
+    private Player player;
 
     private bool runEnabled;
 
     private void Awake()
     {
+        player = GetComponent<Player>();
         body = GetComponent<Rigidbody>();
-        input = new InputHandler();
     }
     
 	private void Update ()
     {
+        InputHandler input = player.input;
         input.RefreshInputs();
-        float speed = baseSpeed * (input.KeyPressed(KeyboardInput.Run) ? 2 : 1);
+        float speed = player.BaseSpeed * (input.KeyPressed(KeyboardInput.Run) ? 2 : 1);
         if (input.KeyPressed(KeyboardInput.Forward))
         {
             body.velocity = new Vector3(body.velocity.x, body.velocity.y, speed);
@@ -39,12 +38,6 @@ public class PlayerMovement : MonoBehaviour {
         {
             body.velocity = new Vector3(speed, body.velocity.y, body.velocity.z);
         }
-
-        // TODO move to player actions
-        if (input.ActionPressed(InputHandler.ActionInput.Jump))
-        {
-            Instantiate(Resources.Load("Spawnables/Capsule"), transform.position + Vector3.down * 0.6f, Quaternion.identity, transform);
-        }
-
+        
 	}
 }
