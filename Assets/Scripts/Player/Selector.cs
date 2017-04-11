@@ -8,10 +8,12 @@ public class Selector : MonoBehaviour {
     private Player player;
     private Transform selectionBox;
 
+    private float indicatorFoV;
+
     private void Awake()
     {
         player = GetComponent<Player>();
-        selectionBox = Instantiate(Resources.Load<GameObject>("Selection/Cylinder")).transform;
+        selectionBox = GameObject.Find("UnitIndicator").transform;
     }
 
     private void Update()
@@ -38,7 +40,8 @@ public class Selector : MonoBehaviour {
     {
         if (SelectedUnit != null)
         {
-            selectionBox.position = new Vector3(SelectedUnit.transform.position.x, 0f, SelectedUnit.transform.position.z);
+            selectionBox.position = new Vector3(SelectedUnit.transform.position.x, 3f, SelectedUnit.transform.position.z);
+            selectionBox.Rotate(Vector3.forward * Time.deltaTime * 20f);
         }
         else
         {
