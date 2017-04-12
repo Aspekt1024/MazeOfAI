@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NPC : MonoBehaviour {
+public class Unit : MonoBehaviour {
     
     public float speed = 15f;
     public float turnDist = 0.5f;
     public float turnSpeed = 3f;
     public float stoppingDist = 2.5f;
+
+    public string Name = "unnamed unit";
+    public UnitButtons.WorkerTasks Task;
+
+    protected float elevation;
 
     private AIMovement movement;
     private Level level;
@@ -27,8 +32,10 @@ public class NPC : MonoBehaviour {
     }
     private NPCStates state;
 
+
     private void Awake()
     {
+        SetupAttributes();
         GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
         level = scriptsObj.GetComponent<Level>();
 
@@ -41,8 +48,13 @@ public class NPC : MonoBehaviour {
     private void Start()
     {
         StartCoroutine(SetupNPC());
-        // TODO move to another NPC spawn manager
-        transform.position = new Vector3(MazeWallPlacement.xStart + 10f, 0f, MazeWallPlacement.zStart + level.numRows * MazeWallPlacement.wallLength + 3f);
+        Task = UnitButtons.WorkerTasks.Idle;
+    }
+
+    protected virtual void SetupAttributes()
+    {
+        Name = "unnamed unit";
+        elevation = 0f;
     }
 
     private void Update()
@@ -52,8 +64,19 @@ public class NPC : MonoBehaviour {
             cargo.transform.position = transform.position + transform.forward * 0.3f;
         }
 
-        if (state != NPCStates.Idle) return;
+        if (state != NPCStates.Idle || Task != UnitButtons.WorkerTasks.Gather) return;
 
+        FindResourceToGather();
+    }
+
+    public void SetTask(UnitButtons.WorkerTasks newTask)
+    {
+        if (Task == newTask) return;
+        Task = newTask;
+    }
+
+    private void FindResourceToGather()
+    {
         GameObject[] resources = GameObject.FindGameObjectsWithTag("Resource");
         if (resources.Length == 0) return;
 
@@ -87,6 +110,7 @@ public class NPC : MonoBehaviour {
         {
             if (Time.timeSinceLevelLoad < 2f) yield return new WaitForSeconds(2f);
             yield return new WaitForSeconds(minPathUpdateTime);
+            if (target == null) continue;
             if ((target.position - targetOldPos).sqrMagnitude > squareMoveThreshold)
             {
                 PathRequestManager.RequestPath(new PathRequest(transform.position, target.position, gameObject, OnPathFound));
@@ -140,7 +164,23 @@ public class NPC : MonoBehaviour {
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
                 transform.rotation = Quaternion.LookRotation(new Vector3(transform.forward.x, -0.4f * speedPercent, transform.forward.z));
                 transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * speed * speedPercent;
+
+                if (Task == UnitButtons.WorkerTasks.Idle)
+                {
+                    target.GetComponent<Capsule>().Assigned = false;
+                    if (state == NPCStates.Building)
+                    {
+                        state = NPCStates.Idle;
+                    }
+                    else if (state == NPCStates.Gathering)
+                    {
+                        target = null;
+                        state = NPCStates.Idle;
+                    }
+                    yield break;
+                }
             }
+
             yield return null;
         }
         TargetReached();
@@ -171,5 +211,26 @@ public class NPC : MonoBehaviour {
         {
             path.DrawWithGizmos();
         }
+    }
+
+    public void MoveUnitToPoint(Vector3 startPoint, Vector3 endPoint)
+    {
+        StartCoroutine(MoveToPoint(startPoint, endPoint));
+    }
+
+    private IEnumerator MoveToPoint(Vector3 startPoint, Vector3 endPoint)
+    {
+        transform.position = new Vector3(startPoint.x, elevation, startPoint.z);
+        while (Vector2.Distance(V3ToV2(transform.position), V3ToV2(endPoint)) > .1f)
+        {
+            transform.LookAt(new Vector3(endPoint.x, elevation, endPoint.z));
+            transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * speed;
+            yield return null;
+        }
+    }
+
+    private static Vector2 V3ToV2(Vector3 V3)
+    {
+        return new Vector2(V3.x, V3.z);
     }
 }

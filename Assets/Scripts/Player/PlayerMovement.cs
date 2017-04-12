@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour {
 	private void Update ()
     {
         InputHandler input = player.input;
+        if (input == null) return;
         input.RefreshInputs();
         float speed = player.BaseSpeed * (input.KeyPressed(KeyboardInput.Run) ? 2 : 1);
         if (input.KeyPressed(KeyboardInput.Forward))
