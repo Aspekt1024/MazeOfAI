@@ -11,7 +11,7 @@ public class UnitStats : MonoBehaviour {
     private Unit unit;
     private Building building;
     
-    public void UnitSelected(GameObject newObj)
+    public void UnitSelected(Selectable newObj)
     {
         unit = newObj.GetComponent<Unit>();
         building = newObj.GetComponent<Building>();

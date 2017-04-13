@@ -21,7 +21,7 @@ public class UnitButtons : MonoBehaviour {
         canvas.alpha = 0f;
     }
     
-    public void UnitSelected(GameObject newObj)
+    public void UnitSelected(Selectable newObj)
     {
         canvas.alpha = 1f;
         canvas.blocksRaycasts = true;
@@ -41,6 +41,7 @@ public class UnitButtons : MonoBehaviour {
 
     public void SetIdle()
     {
+        GUI.FocusControl(null);
         if (unit != null)
             unit.SetTask(WorkerTasks.Idle);
 
@@ -49,6 +50,7 @@ public class UnitButtons : MonoBehaviour {
     }
     public void SetGather()
     {
+        GUI.FocusControl(null);
         if (unit != null)
             unit.SetTask(WorkerTasks.Gather);
 

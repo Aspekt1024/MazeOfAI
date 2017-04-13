@@ -8,6 +8,7 @@ public class Drone : Unit {
     {
         Name = "Drone";
         elevation = 0.5f;
+        Task = UnitButtons.WorkerTasks.Gather;
     }
 
 }

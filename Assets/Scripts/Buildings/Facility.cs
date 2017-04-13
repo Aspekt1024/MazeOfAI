@@ -5,6 +5,7 @@ using UnityEngine;
 public class Facility : Building {
 
     private bool trainingUnit;
+    private int unitsInTrainingQueue;
     private float unitCompletion;
     private float timeToComplete;
 
@@ -24,19 +25,38 @@ public class Facility : Building {
         {
             trainingUnit = false;
             SpawnUnit();
+            if (unitsInTrainingQueue > 0)
+            {
+                unitsInTrainingQueue--;
+                TrainUnit();
+            }
         }
     }
 
+    // TODO implement GUI displays
+
     public void BeginTrainingUnit()
+    {
+        if (GameData.Instance.Capsules < 10) return; // TODO create message: not enough resources
+        GameData.Instance.Capsules -= 10;
+        if (trainingUnit)
+            unitsInTrainingQueue++;
+        else
+            TrainUnit();
+    }
+
+    private void TrainUnit()
     {
         trainingUnit = true;
         unitCompletion = 0;
-        timeToComplete = 2f;
+        timeToComplete = 4f;
     }
 
     public void CancelTrainingUnit()
     {
         trainingUnit = false;
+        GameData.Instance.Capsules += 10 * (unitsInTrainingQueue + 1);
+        unitsInTrainingQueue = 0;
     }
 
     private void SpawnUnit()

@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Selector : MonoBehaviour {
 
-    private GameObject SelectedUnit;
-    private GameObject SelectedBuilding;
+    private Selectable SelectedObj;
     private Player player;
     private Transform selectionBox;
 
@@ -20,6 +19,12 @@ public class Selector : MonoBehaviour {
 
     private void Update()
     {
+        GetMouseInput();
+        DrawSelectionIndicator();
+    }
+
+    private void GetMouseInput()
+    {
         InputHandler input = player.input;
         if (Input.GetMouseButtonDown(0))
         {
@@ -27,53 +32,48 @@ public class Selector : MonoBehaviour {
             Camera camera = GetComponentInChildren<Camera>();
             Ray ray = camera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("Unit"));
+            Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("SelectionBox"));
 
-            if (hit.collider != null)
-            {
-                SelectedUnit = hit.collider.gameObject;
-                EventListener.UnitSelected(SelectedUnit);
-                SelectedBuilding = null;
-            }
-            else
-            {
-                Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("Building"));
-                if (hit.collider != null)
-                {
-                    SelectedBuilding = hit.collider.gameObject;
-                    EventListener.UnitSelected(SelectedBuilding);
-                    SelectedUnit = null;
-                }
-            }
-
+            if (hit.collider == null) return;
+            System.Type type = GetObjectType(hit.collider.transform);
+            if (type == null || !type.Equals(typeof(Selectable))) return;
+            EventListener.ObjectSelected(SelectedObj);
         }
-        
-        if (SelectedBuilding == null && SelectedUnit == null)
+    }
+
+    private void DrawSelectionIndicator()
+    {
+        if (SelectedObj == null)
         {
             selectionBox.position = new Vector3(0, -1, 0);
-            return;
         }
-
-        DrawRingAroundUnit();
-        DrawRingAroundBuilding();
+        else
+        {
+            selectionBox.position = new Vector3(SelectedObj.transform.position.x, 3f, SelectedObj.transform.position.z);
+            selectionBox.Rotate(Vector3.forward * Time.deltaTime * 30f);
+            selectionBox.GetComponent<Projector>().fieldOfView = SelectedObj.ObjRadius;
+        }
     }
 
-    private void DrawRingAroundUnit()
+    private System.Type GetObjectType(Transform obj)
     {
-        if (SelectedUnit == null) return;
+        Selectable objScript = null;
 
-        selectionBox.position = new Vector3(SelectedUnit.transform.position.x, 3f, SelectedUnit.transform.position.z);
-        selectionBox.Rotate(Vector3.forward * Time.deltaTime * 30f);
-        selectionBox.GetComponent<Projector>().fieldOfView = 25f;
+        while (objScript == null)
+        {
+            objScript = obj.GetComponent<Selectable>();
+
+            if (objScript != null)
+            {
+                SelectedObj = objScript;
+                return typeof(Selectable);
+            }
+
+            if (obj == obj.root)
+                break;
+
+            obj = obj.transform.parent;
+        }
+        return null;
     }
-
-    private void DrawRingAroundBuilding()
-    {
-        if (SelectedBuilding == null) return;
-
-        selectionBox.position = new Vector3(SelectedBuilding.transform.position.x, 4f, SelectedBuilding.transform.position.z);
-        selectionBox.GetComponent<Projector>().fieldOfView = 57.95f;
-        selectionBox.Rotate(Vector3.forward * Time.deltaTime * 30f);
-    }
-
 }

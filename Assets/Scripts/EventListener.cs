@@ -2,13 +2,16 @@
 
 public static class EventListener {
 
-    public delegate void SelectListener(GameObject unit);
+    public delegate void SelectListener(Selectable unit);
     public static SelectListener OnUnitSelected;
 
     public delegate void DeselectListener();
     public static DeselectListener OnDeselected;
 
-    public static void UnitSelected(GameObject unit)
+    public delegate void ResourceListener();
+    public static ResourceListener OnCurrencyChange;
+
+    public static void ObjectSelected(Selectable unit)
     {
         if (OnUnitSelected != null)
             OnUnitSelected(unit);
@@ -18,5 +21,11 @@ public static class EventListener {
     {
         if (OnDeselected != null)
             OnDeselected();
+    }
+
+    public static void CurrencyChange()
+    {
+        if (OnCurrencyChange != null)
+            OnCurrencyChange();
     }
 }

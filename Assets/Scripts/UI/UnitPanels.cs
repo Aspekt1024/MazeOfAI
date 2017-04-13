@@ -7,32 +7,32 @@ public class UnitPanels : MonoBehaviour {
     public UnitButtons buttons;
     public UnitStats stats;
 
-    private GameObject unit;
+    private Selectable obj;
 
     private void OnEnable()
     {
-        EventListener.OnUnitSelected += UnitSelected;
-        EventListener.OnDeselected += UnitDeselected;
+        EventListener.OnUnitSelected += ObjectSelected;
+        EventListener.OnDeselected += ObjectDeselected;
     }
     private void OnDisable()
     {
-        EventListener.OnUnitSelected -= UnitSelected;
-        EventListener.OnDeselected -= UnitDeselected;
+        EventListener.OnUnitSelected -= ObjectSelected;
+        EventListener.OnDeselected -= ObjectDeselected;
     }
 
-    private void UnitSelected(GameObject newUnit)
+    private void ObjectSelected(Selectable newObj)
     {
-        if (unit == newUnit) return;
+        if (obj == newObj) return;
 
-        unit = newUnit;
-        stats.UnitSelected(unit);
-        buttons.UnitSelected(unit);
+        obj = newObj;
+        stats.UnitSelected(obj);
+        buttons.UnitSelected(obj);
     }
 
-    private void UnitDeselected()
+    private void ObjectDeselected()
     {
-        if (unit == null) return;
-        unit = null;
+        if (obj == null) return;
+        obj = null;
         stats.Deselected();
         buttons.Deselected();
     }
