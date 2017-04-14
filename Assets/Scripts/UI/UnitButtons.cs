@@ -6,9 +6,7 @@ using UnityEngine.UI;
 public class UnitButtons : MonoBehaviour {
 
     private CanvasGroup canvas;
-
-    private Unit unit;
-    private Building building;
+    private Selectable selectedObj;
 
     List<Button> buttons = new List<Button>();
     
@@ -23,24 +21,19 @@ public class UnitButtons : MonoBehaviour {
         canvas.alpha = 1f;
         canvas.blocksRaycasts = true;
 
-        unit = newObj.GetComponent<Unit>();
-        building = newObj.GetComponent<Building>();
+        selectedObj = newObj;
 
         CreateButtons();
     }
 
     private void CreateButtons()
     {
-        foreach(Button btn in buttons)
-        {
-            Destroy(btn.gameObject);
-        }
-        buttons = new List<Button>();
+        DestroyExistingButtons();
 
-        if (unit != null)
+        if (selectedObj != null)
         {
             Rect rect = GetComponent<RectTransform>().rect;
-            var tasks = unit.GetTaskList();
+            List<Selectable.Task> tasks = selectedObj.GetTaskList();
 
             const float btnPadding = 3f;
             const float btnHeight = 30f - btnPadding * 2;
@@ -48,7 +41,7 @@ public class UnitButtons : MonoBehaviour {
 
             for (int i = 0; i < tasks.Count; i++)
             {
-                Button btn = Instantiate(Resources.Load<Button>("Buttons/ButtonPrefab"), transform);
+                Button btn = Instantiate(Resources.Load<Button>("UI/ButtonPrefab"), transform);
                 RectTransform rt = btn.GetComponent<RectTransform>();
                 rt.sizeDelta = new Vector2(btnWidth, btnHeight);
 
@@ -58,36 +51,32 @@ public class UnitButtons : MonoBehaviour {
 
                 btn.GetComponent<RectTransform>().position = pos;
                 btn.GetComponentInChildren<Text>().text = tasks[i].taskName;
+
                 int taskId = tasks[i].taskId;
-                btn.onClick.AddListener(() => unit.SetTask(taskId));
+                btn.onClick.AddListener(() => selectedObj.SetTask(taskId));
+                
+                btn.navigation = new Navigation() {
+                    mode = Navigation.Mode.None
+                };
+
                 buttons.Add(btn);
             }
-
         }
+    }
+
+    private void DestroyExistingButtons()
+    {
+        foreach (Button btn in buttons)
+        {
+            Destroy(btn.gameObject);
+        }
+        buttons = new List<Button>();
     }
 
     public void Deselected()
     {
         canvas.alpha = 0f;
         canvas.blocksRaycasts = false;
-        unit = null;
-    }
-
-    public void SetIdle()
-    {
-        //if (unit != null)
-        //    unit.SetTask(WorkerTasks.Idle);
-
-        if (building != null)
-            ((Facility)building).CancelTrainingUnit();
-    }
-
-    public void SetGather()
-    {
-        //if (unit != null)
-        //    unit.SetTask(WorkerTasks.Gather);
-
-        if (building != null)
-            ((Facility)building).BeginTrainingUnit();
+        selectedObj = null;
     }
 }

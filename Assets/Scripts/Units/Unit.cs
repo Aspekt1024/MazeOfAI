@@ -4,18 +4,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using System;
 
-public struct Task
-{
-    public string taskName;
-    public int taskId;
-
-    public Task(string task, int id)
-    {
-        taskName = task;
-        taskId = id;
-    }
-}
-
 public abstract class Unit : Selectable {
 
     public float baseSpeed = 5f;
@@ -27,7 +15,9 @@ public abstract class Unit : Selectable {
     protected bool UnitActive;
     protected float elevation;
     protected UnitPathfinder pathfinder;
-    
+
+    public abstract void TargetReached();
+
     private void Awake()
     {
         pathfinder = gameObject.AddComponent<UnitPathfinder>();
@@ -35,21 +25,12 @@ public abstract class Unit : Selectable {
         ObjRadius = 25f;
         SetupAttributes();
     }
-
+    
     protected virtual void SetupAttributes()
     {
         Name = "unnamed unit";
         elevation = 0f;
     }
-    
-    public virtual List<Task> GetTaskList()
-    {
-        return new List<Task>();
-    }
-
-    public virtual void SetTask(int taskId) { }
-    
-    public abstract void TargetReached();
     
     public float GetSpeed()
     {

@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class AIMovement : MonoBehaviour {
     
-    private Rigidbody body;
+    //private Rigidbody body;
 
-    private bool runEnabled;
+    //private bool runEnabled;
 
     private void Awake()
     {
-        body = GetComponent<Rigidbody>();
+        //body = GetComponent<Rigidbody>();
     }
 
 

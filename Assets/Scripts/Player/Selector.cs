@@ -1,18 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Selector : MonoBehaviour {
 
     private Selectable SelectedObj;
-    private Player player;
     private Transform selectionBox;
 
     private float indicatorFoV;
 
     private void Awake()
     {
-        player = GetComponent<Player>();
         GameObject unitIndicatorPrefab = Resources.Load<GameObject>("Selection/UnitIndicator");
         selectionBox = Instantiate(unitIndicatorPrefab).transform;
     }
@@ -25,19 +24,28 @@ public class Selector : MonoBehaviour {
 
     private void GetMouseInput()
     {
-        InputHandler input = player.input;
         if (Input.GetMouseButtonDown(0))
         {
+
+            if (EventSystem.current.IsPointerOverGameObject()) return;
+
             Vector2 clickPos = Input.mousePosition;
             Camera camera = GetComponentInChildren<Camera>();
             Ray ray = camera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("SelectionBox"));
 
-            if (hit.collider == null) return;
-            System.Type type = GetObjectType(hit.collider.transform);
-            if (type == null || !type.Equals(typeof(Selectable))) return;
-            EventListener.ObjectSelected(SelectedObj);
+            if (hit.collider == null)
+            {
+                SelectedObj = null;
+                EventListener.Deselected();
+            }
+            else
+            {
+                System.Type type = SelectObject(hit.collider.transform);
+                if (type == null || !type.Equals(typeof(Selectable))) return;
+                EventListener.ObjectSelected(SelectedObj);
+            }
         }
     }
 
@@ -55,7 +63,7 @@ public class Selector : MonoBehaviour {
         }
     }
 
-    private System.Type GetObjectType(Transform obj)
+    private System.Type SelectObject(Transform obj)
     {
         Selectable objScript = null;
 

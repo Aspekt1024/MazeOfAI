@@ -12,11 +12,11 @@ public class Drone : Unit {
     }
     private DroneStates state;
 
-    public enum WorkerTasks
+    private enum WorkerTasks
     {
         Idle = 0, Gather
     }
-    public WorkerTasks Task;
+    private WorkerTasks task;
 
     private Transform cargo;
     private Collider intersectingTargetCollider;
@@ -25,7 +25,8 @@ public class Drone : Unit {
     {
         Name = "Drone";
         elevation = 0.5f;
-        Task = WorkerTasks.Gather;
+        baseSpeed = 5f;
+        task = WorkerTasks.Gather;
         state = DroneStates.Idle;
     }
     
@@ -40,14 +41,13 @@ public class Drone : Unit {
 
     private void Update()
     {
-        UnitActive = true;
         if (!UnitActive) return;
 
         PositionHeldCargo();
         CheckIfAlreadyIntersectingTarget();
         CancelActionsIfSetToIdle();
 
-        if (state == DroneStates.Idle && Task == WorkerTasks.Gather)
+        if (state == DroneStates.Idle && task == WorkerTasks.Gather)
         {
             FindResourceToGather();
         }
@@ -71,12 +71,17 @@ public class Drone : Unit {
 
     private void CancelActionsIfSetToIdle()
     {
-        if (Task == WorkerTasks.Idle && state != DroneStates.Idle)
+        if (task == WorkerTasks.Idle && state != DroneStates.Idle)
         {
             if (Target != null && Target.GetComponent<Capsule>() != null)
             {
                 Target.GetComponent<Capsule>().Assigned = false;
                 Target = null;
+            }
+            if (cargo !=  null && cargo.GetComponent<Capsule>() != null)
+            {
+                cargo.GetComponent<Capsule>().Assigned = false;
+                cargo = null;
             }
             pathfinder.Stop();
             state = DroneStates.Idle;
@@ -125,7 +130,7 @@ public class Drone : Unit {
     
     public override void SetTask(int taskId)
     {
-        Task = GetEnumFromId<WorkerTasks>(taskId);
+        task = GetEnumFromId<WorkerTasks>(taskId);
     }
     
     public override void TargetReached()

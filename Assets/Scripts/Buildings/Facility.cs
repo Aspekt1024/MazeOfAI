@@ -9,6 +9,11 @@ public class Facility : Building {
     private float unitCompletion;
     private float timeToComplete;
 
+    private enum FacilityTasks
+    {
+        TrainDrone, CancelTraining
+    }
+
 	private void Start ()
     {
         completed = true;
@@ -28,24 +33,29 @@ public class Facility : Building {
             if (unitsInTrainingQueue > 0)
             {
                 unitsInTrainingQueue--;
-                TrainUnit();
+                BeginTrainingUnit();
             }
         }
     }
     
     // TODO implement GUI displays
 
-    public void BeginTrainingUnit()
+    private void TrainUnit()
     {
-        if (GameData.Instance.Capsules < 10) return; // TODO create message: not enough resources
+        if (GameData.Instance.Capsules < 10)
+        {
+            AlertEvents.InsufficientFunds();
+            return;
+        }
+
         GameData.Instance.Capsules -= 10;
         if (trainingUnit)
             unitsInTrainingQueue++;
         else
-            TrainUnit();
+            BeginTrainingUnit();
     }
 
-    private void TrainUnit()
+    private void BeginTrainingUnit()
     {
         trainingUnit = true;
         unitCompletion = 0;
@@ -54,8 +64,8 @@ public class Facility : Building {
 
     public void CancelTrainingUnit()
     {
+        GameData.Instance.Capsules += 10 * (unitsInTrainingQueue + (trainingUnit ? 1 : 0));
         trainingUnit = false;
-        GameData.Instance.Capsules += 10 * (unitsInTrainingQueue + 1);
         unitsInTrainingQueue = 0;
     }
 
@@ -75,4 +85,27 @@ public class Facility : Building {
         else
             return "Training: " + Mathf.RoundToInt(unitCompletion * 100) + "%";
     }
+
+    public override List<Task> GetTaskList()
+    {
+        List<Task> tasks = new List<Task>();
+        tasks.Add(new Task("Train Drone", (int)FacilityTasks.TrainDrone));
+        tasks.Add(new Task("Cancel Training", (int)FacilityTasks.CancelTraining));
+
+        return tasks;
+    }
+
+    public override void SetTask(int taskId)
+    {
+        switch (GetEnumFromId<FacilityTasks>(taskId))
+        {
+            case FacilityTasks.TrainDrone:
+                TrainUnit();
+                break;
+            case FacilityTasks.CancelTraining:
+                CancelTrainingUnit();
+                break;
+        }
+    }
+
 }

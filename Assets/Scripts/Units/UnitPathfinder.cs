@@ -8,8 +8,7 @@ public class UnitPathfinder : MonoBehaviour {
     private float turnDist = 0.5f;
     private float turnSpeed = 3f;
     private float stoppingDist = 2f;
-
-    private Level level;
+    
     private Unit unit;
     private Path path;
     private Coroutine followRoutine = null;
@@ -20,8 +19,6 @@ public class UnitPathfinder : MonoBehaviour {
 
     private void Awake()
     {
-        GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
-        level = scriptsObj.GetComponent<Level>();
         unit = GetComponent<Unit>();
     }
 
