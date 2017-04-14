@@ -32,7 +32,7 @@ public class Facility : Building {
             }
         }
     }
-
+    
     // TODO implement GUI displays
 
     public void BeginTrainingUnit()
@@ -49,7 +49,7 @@ public class Facility : Building {
     {
         trainingUnit = true;
         unitCompletion = 0;
-        timeToComplete = 4f;
+        timeToComplete = 1f;
     }
 
     public void CancelTrainingUnit()

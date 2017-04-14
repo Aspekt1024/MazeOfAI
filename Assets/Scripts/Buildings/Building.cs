@@ -36,4 +36,9 @@ public class Building : Selectable {
     {
         return "";
     }
+
+    public virtual Vector3 GetEntryPoint()
+    {
+        return transform.position;
+    }
 }

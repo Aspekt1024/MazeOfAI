@@ -5,7 +5,6 @@ using UnityEngine;
 public class PathGrid : MonoBehaviour {
 
     public bool DisplayGrid;
-    public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
     public int obstacleProximityPenalty = 10;
@@ -13,6 +12,7 @@ public class PathGrid : MonoBehaviour {
     [HideInInspector]
     public bool GridGenerated;
 
+    private LayerMask unwalkableMask;
     private LayerMask walkableMask;
     private PathNode[,] grid;
     private float nodeDiameter;
@@ -23,6 +23,12 @@ public class PathGrid : MonoBehaviour {
     private int penaltyMax = int.MinValue;
     
     private Dictionary<int, int> TerrainPenaltyDict = new Dictionary<int, int>();
+
+    private static List<string> UnwalkableLayers = new List<string>()
+    {
+        {"MazeWall"},
+        {"BuildingBounds"}
+    };
     
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
     {
@@ -98,7 +104,16 @@ public class PathGrid : MonoBehaviour {
     private void Awake()
     {
         gameObject.AddComponent<PathRequestManager>();
+        SetupUnwalkableMask();
         SetupTerrainPenalties();
+    }
+
+    private void SetupUnwalkableMask()
+    {
+        foreach(string layer in UnwalkableLayers)
+        {
+            unwalkableMask |= 1 << LayerMask.NameToLayer(layer);
+        }
     }
 
     private void SetupTerrainPenalties()

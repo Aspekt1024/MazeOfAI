@@ -37,7 +37,7 @@ public class UnitStats : MonoBehaviour {
     private void UpdateUnitStats()
     {
         UnitName.text = unit.Name;
-        UnitTask.text = unit.Task.ToString();
+        //UnitTask.text = unit.Task.ToString();
     }
 
     private void UpdateBuildingStats()
