@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Building : Selectable {
-
-    public string Name = "unnamed building";
-
+    
     protected float completion;
     protected bool completed;
 

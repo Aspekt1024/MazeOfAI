@@ -5,44 +5,79 @@ using UnityEngine.UI;
 
 public class UnitStats : MonoBehaviour {
 
-    public Text UnitName;
-    public Text UnitTask;
+    public Text ObjectName;
 
-    private Unit unit;
-    private Building building;
+    private Selectable SelectedObject = null;
+
+    List<string> statList = new List<string>();
+    private Text[] textObjects = new Text[0];
     
     public void UnitSelected(Selectable newObj)
     {
-        unit = newObj.GetComponent<Unit>();
-        building = newObj.GetComponent<Building>();
+        // Text objects only get recreated when a new object is selected
+        // Otherwise, Update() will update the existing Text objects;
+        if (SelectedObject == newObj) return;
+
+        DeleteExistingText();
+        SelectedObject = newObj;
+
+        ObjectName.text = SelectedObject.Name;
+        statList = SelectedObject.GetStatsList();
+        CreateTextObjects();
+        UpdateObjectStats();
     }
 
     public void Deselected()
     {
-        unit = null;
-        building = null;
-        UnitName.text = "";
-        UnitTask.text = "";
+        SelectedObject = null;
+        ObjectName.text = "";
+        DeleteExistingText();
     }
 
     private void Update()
     {
-        if (unit != null)
-            UpdateUnitStats();
+        if (SelectedObject == null) return;
 
-        if (building != null)
-            UpdateBuildingStats();
+        UpdateObjectStats();
     }
 
-    private void UpdateUnitStats()
+    private void UpdateObjectStats()
     {
-        UnitName.text = unit.Name;
-        //UnitTask.text = unit.Task.ToString();
+        statList = SelectedObject.GetStatsList();
+        for (int i = 0; i < statList.Count; i++)
+        {
+            textObjects[i].text = statList[i];
+        }
     }
 
-    private void UpdateBuildingStats()
+    private void CreateTextObjects()
     {
-        UnitName.text = building.Name;
-        UnitTask.text = building.GetProgressString();
+        textObjects = new Text[statList.Count];
+        RectTransform rt = GetComponent<RectTransform>();
+
+        const float padding = 3f;
+        float textWidth = rt.rect.width;
+        float textHeight = 20f;
+
+        for (int i = 0; i < statList.Count; i++)
+        {
+            Text newText = Instantiate(Resources.Load<Text>("UI/StatTextPrefab"), transform);
+            float xPos = transform.position.x - rt.rect.width / 2 + textWidth / 2 + padding;
+            float yPos = transform.position.y + rt.rect.height / 2 - textHeight / 2 - textHeight * (i + 1);
+            newText.rectTransform.sizeDelta = new Vector2(textWidth - 2 * padding, textHeight - 2 * padding);
+            newText.rectTransform.position = new Vector3(xPos, yPos, 0f);
+            newText.text = statList[i];
+
+            textObjects[i] = newText;
+        }
+    }
+
+    private void DeleteExistingText()
+    {
+        foreach(var obj in textObjects)
+        {
+            Destroy(obj.gameObject);
+        }
+        textObjects = new Text[0];
     }
 }

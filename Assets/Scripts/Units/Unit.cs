@@ -6,21 +6,24 @@ using System;
 
 public abstract class Unit : Selectable {
 
-    public float baseSpeed = 5f;
-    public float speedMultiplier = 1f;
-    public string Name = "unnamed unit";
-
     public Transform Target;
 
     protected bool UnitActive;
     protected float elevation;
     protected UnitPathfinder pathfinder;
+    protected Experience xpHandler;
+
+    protected float baseSpeed = 5f;
+    protected float speedMultiplier = 1f;
+    protected float baseTurnSpeed = 3f;
+    protected float turnSpeedMultiplier = 1f;
 
     public abstract void TargetReached();
 
     private void Awake()
     {
         pathfinder = gameObject.AddComponent<UnitPathfinder>();
+        xpHandler = gameObject.AddComponent<Experience>();
         
         ObjRadius = 25f;
         SetupAttributes();
@@ -35,6 +38,11 @@ public abstract class Unit : Selectable {
     public float GetSpeed()
     {
         return baseSpeed * speedMultiplier;
+    }
+
+    public float GetTurnSpeed()
+    {
+        return baseTurnSpeed * turnSpeedMultiplier;
     }
 
     public void MoveUnitToPoint(Vector3 startPoint, Vector3 endPoint)
@@ -55,4 +63,5 @@ public abstract class Unit : Selectable {
     }
 
     public abstract void FindAnotherPath();
+    public virtual void UpdateAttributesForLevel(int level) { }
 }

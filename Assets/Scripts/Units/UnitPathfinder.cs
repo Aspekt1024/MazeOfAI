@@ -6,7 +6,6 @@ using System;
 public class UnitPathfinder : MonoBehaviour {
 
     private float turnDist = 0.5f;
-    private float turnSpeed = 3f;
     private float stoppingDist = 2f;
     
     private Unit unit;
@@ -112,10 +111,9 @@ public class UnitPathfinder : MonoBehaviour {
                 }
 
                 Quaternion targetRotation = Quaternion.LookRotation(new Vector3(path.lookPoints[pathIndex].x, 0, path.lookPoints[pathIndex].z) - new Vector3(pos2D.x, 0, pos2D.y));
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * unit.GetTurnSpeed());
                 transform.rotation = Quaternion.LookRotation(new Vector3(transform.forward.x, -0.4f * speedPercent, transform.forward.z));
                 transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * unit.GetSpeed() * speedPercent;
-
             }
 
             yield return null;

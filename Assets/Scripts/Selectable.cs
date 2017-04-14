@@ -6,6 +6,7 @@ using System;
 
 public class Selectable : MonoBehaviour {
 
+    public string Name = "unnamed object";
     public float ObjRadius;
     
     public struct Task
@@ -36,5 +37,6 @@ public class Selectable : MonoBehaviour {
     }
 
     public virtual List<Task> GetTaskList() { return new List<Task>(); }
+    public virtual List<string> GetStatsList() { return new List<string>(); }
     public virtual void SetTask(int taskId) { }
 }

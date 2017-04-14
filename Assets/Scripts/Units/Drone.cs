@@ -26,6 +26,8 @@ public class Drone : Unit {
         Name = "Drone";
         elevation = 0.5f;
         baseSpeed = 5f;
+        baseTurnSpeed = 3f;
+
         task = WorkerTasks.Gather;
         state = DroneStates.Idle;
     }
@@ -37,6 +39,16 @@ public class Drone : Unit {
         tasks.Add(new Task("Gather", (int)WorkerTasks.Gather));
 
         return tasks;
+    }
+
+    public override List<string> GetStatsList()
+    {
+        List<string> statsList = new List<string>();
+
+        statsList.Add("Level: " + xpHandler.level + " (" + xpHandler.experience + "/" + xpHandler.GetNextLevelXP() + ")");
+        statsList.Add("Task: " + task);
+
+        return statsList;
     }
 
     private void Update()
@@ -126,6 +138,7 @@ public class Drone : Unit {
         Destroy(cargo.gameObject);
         Target.GetComponentInParent<Building>().IncreaseCompletion(0.1f);
         GameData.Instance.Capsules += 1;
+        xpHandler.AddExperience(10);
     }
     
     public override void SetTask(int taskId)
@@ -164,5 +177,20 @@ public class Drone : Unit {
     {
         Target = null;
         state = DroneStates.Idle;
+    }
+
+    public override void UpdateAttributesForLevel(int level)
+    {
+        switch (level)
+        {
+            case 2:
+                speedMultiplier = 1.5f;
+                turnSpeedMultiplier = 2f;
+                break;
+            case 3:
+                speedMultiplier = 2f;
+                turnSpeedMultiplier = 4f;
+                break;
+        }
     }
 }

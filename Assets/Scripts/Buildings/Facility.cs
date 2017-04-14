@@ -95,6 +95,16 @@ public class Facility : Building {
         return tasks;
     }
 
+    public override List<string> GetStatsList()
+    {
+        List<string> statsList = new List<string>();
+        
+        statsList.Add("Queue: " + unitsInTrainingQueue);
+        statsList.Add(GetProgressString());
+
+        return statsList;
+    }
+
     public override void SetTask(int taskId)
     {
         switch (GetEnumFromId<FacilityTasks>(taskId))
