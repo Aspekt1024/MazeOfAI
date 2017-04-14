@@ -34,6 +34,11 @@ public class UnitStats : MonoBehaviour {
         DeleteExistingText();
     }
 
+    private void Start()
+    {
+        ObjectName.text = "";
+    }
+
     private void Update()
     {
         if (SelectedObject == null) return;

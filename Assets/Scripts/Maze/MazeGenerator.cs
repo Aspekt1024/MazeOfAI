@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MazeGenerator {
-
+    
     public class MazeCell
     {
         public bool visited;
         public int row;
         public int col;
-        public GameObject northWall;
-        public GameObject southWall;
-        public GameObject eastWall;
-        public GameObject westWall;// TODO Don't create these up front. make these booleans and create on deployment.
+        public bool northWall;
+        public bool southWall;
+        public bool eastWall;
+        public bool westWall;
     }
 
-    private PathGrid grid;
+    private Maze mazeScript;
     private MazeWallPlacement wallHandler = new MazeWallPlacement();
     private MazeCell[,] maze;
     private int rows;
@@ -34,9 +34,14 @@ public class MazeGenerator {
     }
     private CellPos currentCell;
 
+    public MazeGenerator()
+    {
+        mazeScript = GameObject.FindGameObjectWithTag("Maze").GetComponent<Maze>();
+    }
+
     public void Generate(int numRows, int numCols, int startCol = -1, int endCol = -1)
     {
-        wallHandler.Load();
+        wallHandler.LoadMaze(mazeScript);
 
         if (numRows < 1 || numCols < 1)
         {
@@ -50,8 +55,8 @@ public class MazeGenerator {
 
         if (startCol == -1) startCol = Random.Range(0, cols);
         if (endCol == -1) endCol = Random.Range(0, cols);
-        Object.Destroy(maze[0, startCol].southWall);
-        Object.Destroy(maze[rows - 1, endCol].northWall);
+        maze[0, startCol].southWall = false;
+        maze[rows - 1, endCol].northWall = false;
 
         currentCell = new CellPos(0, startCol);
 
@@ -91,27 +96,23 @@ public class MazeGenerator {
     {
         if (temp.c == current.c - 1)
         {
-            Object.Destroy(maze[current.r, current.c].westWall);
-            maze[current.r, current.c].westWall = null;
-            maze[temp.r, temp.c].eastWall = null;
+            maze[current.r, current.c].westWall = false;
+            maze[temp.r, temp.c].eastWall = false;
         }
         else if (temp.c == current.c + 1)
         {
-            Object.Destroy(maze[current.r, current.c].eastWall);
-            maze[current.r, current.c].eastWall = null;
-            maze[temp.r, temp.c].westWall = null;
+            maze[current.r, current.c].eastWall = false;
+            maze[temp.r, temp.c].westWall = false;
         }
         else if (temp.r == current.r - 1)
         {
-            Object.Destroy(maze[current.r, current.c].southWall);
-            maze[current.r, current.c].southWall = null;
-            maze[temp.r, temp.c].northWall = null;
+            maze[current.r, current.c].southWall = false;
+            maze[temp.r, temp.c].northWall = false;
         }
         else if (temp.r == current.r + 1)
         {
-            Object.Destroy(maze[current.r, current.c].northWall);
-            maze[current.r, current.c].northWall = null;
-            maze[temp.r, temp.c].southWall = null;
+            maze[current.r, current.c].northWall = false;
+            maze[temp.r, temp.c].southWall = false;
         }
     }
 
@@ -163,10 +164,10 @@ public class MazeGenerator {
             {
                 maze[row, col] = new MazeCell();
 
-                maze[row, col].southWall = row > 0 ? maze[row - 1, col].northWall : wallHandler.GetNewWall();
-                maze[row, col].westWall = col > 0 ? maze[row, col - 1].eastWall : wallHandler.GetNewWall();
-                maze[row, col].eastWall = wallHandler.GetNewWall();
-                maze[row, col].northWall = wallHandler.GetNewWall();
+                maze[row, col].southWall = row > 0 ? maze[row - 1, col].northWall : true;
+                maze[row, col].westWall = col > 0 ? maze[row, col - 1].eastWall : true;
+                maze[row, col].eastWall = true;
+                maze[row, col].northWall = true;
             }
         }
     }

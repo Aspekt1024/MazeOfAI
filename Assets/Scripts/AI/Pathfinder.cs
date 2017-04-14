@@ -9,19 +9,16 @@ public class Pathfinder : MonoBehaviour {
     private bool processingPath;
     private bool gridGenRequested;
 
-    private void Awake()
+    private void Start()
     {
-        GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
-        grid = scriptsObj.GetComponent<PathGrid>();
+        GameObject mazeObj = GameObject.FindGameObjectWithTag("Maze");
+        grid = mazeObj.GetComponent<PathGrid>();
     }
     
     private void Update()
     {
         if (Time.timeSinceLevelLoad < 2f || gridGenRequested) return;
-
         gridGenRequested = true;
-        GameObject scriptsObj = GameObject.FindGameObjectWithTag("Scripts");
-        grid.CreateGrid(scriptsObj.GetComponent<Level>());
     }
 
     public void FindPath(PathRequest request, Action<PathResult> callback)
@@ -51,7 +48,7 @@ public class Pathfinder : MonoBehaviour {
             yield return null;
 
             int iterations = 0;
-            int maxIterations = 2000;
+            int maxIterations = 2000;   // TODO this will probably become machine/device dependent
             while (openSet.Count > 0)
             {
                 iterations++;

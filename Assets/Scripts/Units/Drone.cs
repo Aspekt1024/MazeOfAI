@@ -185,11 +185,11 @@ public class Drone : Unit {
         {
             case 2:
                 speedMultiplier = 1.5f;
-                turnSpeedMultiplier = 2f;
+                turnSpeedMultiplier = 3f;
                 break;
             case 3:
                 speedMultiplier = 2f;
-                turnSpeedMultiplier = 4f;
+                turnSpeedMultiplier = 4.5f;
                 break;
         }
     }

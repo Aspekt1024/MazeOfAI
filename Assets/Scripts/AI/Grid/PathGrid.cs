@@ -4,14 +4,17 @@ using UnityEngine;
 
 public class PathGrid : MonoBehaviour {
 
-    public bool DisplayGrid;
     public Vector2 gridWorldSize;
-    public float nodeRadius;
-    public int obstacleProximityPenalty = 10;
-
-    [HideInInspector]
     public bool GridGenerated;
 
+    public Vector3 EntryPoint;
+    public Vector3 ExitPoint;
+    public Vector3[] Corners = new Vector3[4];
+    
+    private float nodeRadius;
+    private int obstacleProximityPenalty = 10;
+    
+    private Maze maze;
     private LayerMask unwalkableMask;
     private LayerMask walkableMask;
     private PathNode[,] grid;
@@ -26,8 +29,7 @@ public class PathGrid : MonoBehaviour {
 
     private static List<string> UnwalkableLayers = new List<string>()
     {
-        {"MazeWall"},
-        {"BuildingBounds"}
+        {"MazeWall"}, {"BuildingBounds"}
     };
     
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
@@ -106,6 +108,7 @@ public class PathGrid : MonoBehaviour {
         gameObject.AddComponent<PathRequestManager>();
         SetupUnwalkableMask();
         SetupTerrainPenalties();
+        maze = GameObject.FindGameObjectWithTag("Maze").GetComponent<Maze>();
     }
 
     private void SetupUnwalkableMask()
@@ -128,9 +131,7 @@ public class PathGrid : MonoBehaviour {
     
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
-
-        if (grid != null && DisplayGrid)
+        if (grid != null && maze.DisplayGrid)
         {
             foreach(PathNode node in grid)
             {
@@ -139,26 +140,33 @@ public class PathGrid : MonoBehaviour {
                 Gizmos.color = (node.walkable ? Gizmos.color : Color.red);
                 Gizmos.DrawCube(node.worldPosition, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
             }
+
+            Gizmos.color = Color.cyan;
+            foreach (var corner in Corners)
+            {
+                Gizmos.DrawCube(corner, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
+            }
+            Gizmos.DrawCube(EntryPoint, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
+            Gizmos.DrawCube(ExitPoint, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
         }
     }
 
     public void SetupGrid(int rows, int cols)
     {
-        float length = MazeWallPlacement.wallLength;
+        float length = maze.wallLength;
         nodeRadius = length / 12f;
         nodeDiameter = nodeRadius * 2;
-
-        const int numExtraNodes = 30;
-        gridWorldSize = new Vector2(length * (cols + 0.5f), length * (rows + 0.5f) + numExtraNodes * nodeDiameter);
-        transform.position = new Vector3(MazeWallPlacement.xStart + length * (cols - 1) / 2f, 0f, MazeWallPlacement.zStart + length * (rows - 1) / 2f);
+        
+        gridWorldSize = new Vector2(length * (cols + 0.5f), length * (rows + 0.5f));
+        transform.position = new Vector3(maze.transform.position.x, 0f, maze.transform.position.z);
 
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
     }
 
-    public void CreateGrid(Level level)
+    public void CreateGrid(int numRows, int numCols)
     {
-        SetupGrid(level.numRows, level.numCols);
+        SetupGrid(numRows, numCols);
 
         grid = new PathNode[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x/2 - Vector3.forward * gridWorldSize.y / 2;
@@ -186,8 +194,65 @@ public class PathGrid : MonoBehaviour {
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y, movementPenalty);
             }
         }
+        GetEntrancePoints();
+        GetCornerPoints();
         BlurPenalties(1);
         GridGenerated = true;
+    }
+
+    private void GetEntrancePoints()
+    {
+        int entryStartX = 0;
+        int entryCountX = 1;
+        int exitStartX = 0;
+        int exitCountX = 1;
+
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            if (grid[x, 0].walkable)
+            {
+                if (entryStartX == 0)
+                    entryStartX = x;
+                else
+                    entryCountX++;
+            }
+            else if (entryCountX < 3)
+            {
+                entryStartX = 0;
+                entryCountX = 1;
+            }
+            else
+            {
+                EntryPoint = grid[Mathf.RoundToInt(entryStartX + entryCountX / 2f), 0].worldPosition + Vector3.back * nodeDiameter;
+                entryCountX = 1;
+            }
+
+            if (grid[x, gridSizeY - 1].walkable)
+            {
+                if (exitStartX == 0)
+                    exitStartX = x;
+                else
+                    exitCountX++;
+            }
+            else if (exitCountX < 3)
+            {
+                exitStartX = 0;
+                exitCountX = 1;
+            }
+            else
+            {
+                ExitPoint = grid[Mathf.RoundToInt(exitStartX + exitCountX / 2f), gridSizeY - 1].worldPosition + Vector3.forward * nodeDiameter;
+                exitCountX = 1;
+            }
+        }
+    }
+
+    private void GetCornerPoints()
+    {
+        Corners[0] = grid[0, 0].worldPosition + new Vector3(-nodeDiameter, 0, -nodeDiameter);
+        Corners[1] = grid[0, gridSizeY - 1].worldPosition + new Vector3(-nodeDiameter, 0, nodeDiameter);
+        Corners[2] = grid[gridSizeX - 1, 0].worldPosition + new Vector3(nodeDiameter, 0, -nodeDiameter);
+        Corners[3] = grid[gridSizeX - 1, gridSizeY - 1].worldPosition + new Vector3(nodeDiameter, 0, nodeDiameter);
     }
 
     private void BlurPenalties(int blurSize)
