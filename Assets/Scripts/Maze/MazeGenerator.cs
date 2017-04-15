@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MazeGenerator {
-    
+
+    public MazeCell[,] Maze;
+
     public class MazeCell
     {
         public bool visited;
@@ -17,7 +19,6 @@ public class MazeGenerator {
 
     private Maze mazeScript;
     private MazeWallPlacement wallHandler = new MazeWallPlacement();
-    private MazeCell[,] maze;
     private int rows;
     private int cols;
 
@@ -55,18 +56,18 @@ public class MazeGenerator {
 
         if (startCol == -1) startCol = Random.Range(0, cols);
         if (endCol == -1) endCol = Random.Range(0, cols);
-        maze[0, startCol].southWall = false;
-        maze[rows - 1, endCol].northWall = false;
+        Maze[0, startCol].southWall = false;
+        Maze[rows - 1, endCol].northWall = false;
 
         currentCell = new CellPos(0, startCol);
 
         CreateMaze();
-        DeployMaze();
+        wallHandler.DeployMaze(this);
     }
 
     private void CreateMaze()
     {
-        maze[currentCell.r, currentCell.c].visited = true;
+        Maze[currentCell.r, currentCell.c].visited = true;
         List<CellPos> cellStack = new List<CellPos>();
         cellStack.Add(currentCell);
         
@@ -79,7 +80,7 @@ public class MazeGenerator {
                 int neighbourIndex = Random.Range(0, neighbours.Count);
                 CellPos tempCell = neighbours[neighbourIndex];
                 RemoveIntersectingWall(tempCell, currentCell);
-                maze[tempCell.r, tempCell.c].visited = true;
+                Maze[tempCell.r, tempCell.c].visited = true;
                 cellStack.Add(currentCell);
                 currentCell = tempCell;
             }
@@ -96,23 +97,23 @@ public class MazeGenerator {
     {
         if (temp.c == current.c - 1)
         {
-            maze[current.r, current.c].westWall = false;
-            maze[temp.r, temp.c].eastWall = false;
+            Maze[current.r, current.c].westWall = false;
+            Maze[temp.r, temp.c].eastWall = false;
         }
         else if (temp.c == current.c + 1)
         {
-            maze[current.r, current.c].eastWall = false;
-            maze[temp.r, temp.c].westWall = false;
+            Maze[current.r, current.c].eastWall = false;
+            Maze[temp.r, temp.c].westWall = false;
         }
         else if (temp.r == current.r - 1)
         {
-            maze[current.r, current.c].southWall = false;
-            maze[temp.r, temp.c].northWall = false;
+            Maze[current.r, current.c].southWall = false;
+            Maze[temp.r, temp.c].northWall = false;
         }
         else if (temp.r == current.r + 1)
         {
-            maze[current.r, current.c].northWall = false;
-            maze[temp.r, temp.c].southWall = false;
+            Maze[current.r, current.c].northWall = false;
+            Maze[temp.r, temp.c].southWall = false;
         }
     }
 
@@ -122,52 +123,41 @@ public class MazeGenerator {
 
         if (currentCell.r > 0)
         {
-            if (!maze[currentCell.r - 1, currentCell.c].visited)
+            if (!Maze[currentCell.r - 1, currentCell.c].visited)
                 neighbours.Add(new CellPos(currentCell.r - 1, currentCell.c));
         }
         if (currentCell.r < rows - 1)
         {
-            if (!maze[currentCell.r + 1, currentCell.c].visited)
+            if (!Maze[currentCell.r + 1, currentCell.c].visited)
                 neighbours.Add(new CellPos(currentCell.r + 1, currentCell.c));
         }
         if (currentCell.c > 0)
         {
-            if (!maze[currentCell.r, currentCell.c - 1].visited)
+            if (!Maze[currentCell.r, currentCell.c - 1].visited)
                 neighbours.Add(new CellPos(currentCell.r, currentCell.c - 1));
         }
         if (currentCell.c < cols - 1)
         {
-            if (!maze[currentCell.r, currentCell.c + 1].visited)
+            if (!Maze[currentCell.r, currentCell.c + 1].visited)
                 neighbours.Add(new CellPos(currentCell.r, currentCell.c + 1));
         }
         
         return neighbours;
     }
 
-    private void DeployMaze()
-    {
-        for (int row = 0; row < rows; row++)
-        {
-            for (int col = 0; col < cols; col++)
-            {
-                wallHandler.PlaceCell(maze[row, col], row, col);
-            }
-        }
-    }
-
     private void SetupNewMaze()
     {
-        maze = new MazeCell[rows, cols];
+        Maze = new MazeCell[rows, cols];
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
             {
-                maze[row, col] = new MazeCell();
+                Maze[row, col] = new MazeCell();
 
-                maze[row, col].southWall = row > 0 ? maze[row - 1, col].northWall : true;
-                maze[row, col].westWall = col > 0 ? maze[row, col - 1].eastWall : true;
-                maze[row, col].eastWall = true;
-                maze[row, col].northWall = true;
+                Maze[row, col].southWall = row > 0 ? Maze[row - 1, col].northWall : true;
+                Maze[row, col].westWall = col > 0 ? Maze[row, col - 1].eastWall : true;
+                Maze[row, col].eastWall = true;
+                Maze[row, col].northWall = true;
             }
         }
     }
