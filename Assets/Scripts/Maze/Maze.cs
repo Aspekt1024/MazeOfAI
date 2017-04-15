@@ -12,15 +12,16 @@ public class Maze : MonoBehaviour {
     public float wallLength = 2f;
     public float wallWidth = 0.5f;
     public float wallHeight = 1.5f;
-
-    public bool DisplayGrid;
     
-
     [HideInInspector]
     public PathGrid grid;
 
+    private Level level;
+
     private void Awake ()
     {
+        level = GameObject.FindGameObjectWithTag("Scripts").GetComponent<Level>();
+
         MazeGenerator generator = new MazeGenerator();
         generator.Generate(rows, cols, startCol, endCol);
     }
@@ -28,7 +29,7 @@ public class Maze : MonoBehaviour {
     private void Start()
     {
         grid = gameObject.AddComponent<PathGrid>();
-        grid.CreateGrid(rows, cols);
+        grid.CreateGrid(new Vector2(rows, cols) * wallLength / level.SegmentLength, transform.position);
     }
 	
     private void OnDrawGizmos()

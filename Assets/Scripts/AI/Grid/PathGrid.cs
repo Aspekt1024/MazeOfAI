@@ -4,17 +4,19 @@ using UnityEngine;
 
 public class PathGrid : MonoBehaviour {
 
-    public Vector2 gridWorldSize;
-    public bool GridGenerated;
-
+    public bool DisplayGrid;
+    
     public Vector3 EntryPoint;
     public Vector3 ExitPoint;
     public Vector3[] Corners = new Vector3[4];
-    
+
+    public bool GridGenerated;
+
+    private Level level;
+    private Vector2 gridWorldSize;
     private float nodeRadius;
     private int obstacleProximityPenalty = 10;
     
-    private Maze maze;
     private LayerMask unwalkableMask;
     private LayerMask walkableMask;
     private PathNode[,] grid;
@@ -105,10 +107,10 @@ public class PathGrid : MonoBehaviour {
 
     private void Awake()
     {
+        level = GameObject.FindGameObjectWithTag("Scripts").GetComponent<Level>();
         gameObject.AddComponent<PathRequestManager>();
         SetupUnwalkableMask();
         SetupTerrainPenalties();
-        maze = GameObject.FindGameObjectWithTag("Maze").GetComponent<Maze>();
     }
 
     private void SetupUnwalkableMask()
@@ -131,7 +133,7 @@ public class PathGrid : MonoBehaviour {
     
     private void OnDrawGizmos()
     {
-        if (grid != null && maze.DisplayGrid)
+        if (grid != null && DisplayGrid)
         {
             foreach(PathNode node in grid)
             {
@@ -151,22 +153,22 @@ public class PathGrid : MonoBehaviour {
         }
     }
 
-    public void SetupGrid(int rows, int cols)
+    private void SetupGrid(Vector2 segments, Vector3 position)
     {
-        float length = maze.wallLength;
-        nodeRadius = length / 12f;
+        float length = level.SegmentLength;
+        nodeRadius = length / (2 * level.SegmentDivisions);
         nodeDiameter = nodeRadius * 2;
         
-        gridWorldSize = new Vector2(length * (cols + 0.5f), length * (rows + 0.5f));
-        transform.position = new Vector3(maze.transform.position.x, 0f, maze.transform.position.z);
+        gridWorldSize = segments * length;
+        transform.position = position;
 
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
     }
 
-    public void CreateGrid(int numRows, int numCols)
+    public void CreateGrid(Vector2 segments, Vector3 position)
     {
-        SetupGrid(numRows, numCols);
+        SetupGrid(segments, position);
 
         grid = new PathNode[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x/2 - Vector3.forward * gridWorldSize.y / 2;
@@ -223,7 +225,7 @@ public class PathGrid : MonoBehaviour {
             }
             else
             {
-                EntryPoint = grid[Mathf.RoundToInt(entryStartX + entryCountX / 2f), 0].worldPosition + Vector3.back * nodeDiameter;
+                EntryPoint = grid[Mathf.RoundToInt(entryStartX + (entryCountX - 1) / 2f), 0].worldPosition + Vector3.back * nodeDiameter;
                 entryCountX = 1;
             }
 
@@ -241,7 +243,7 @@ public class PathGrid : MonoBehaviour {
             }
             else
             {
-                ExitPoint = grid[Mathf.RoundToInt(exitStartX + exitCountX / 2f), gridSizeY - 1].worldPosition + Vector3.forward * nodeDiameter;
+                ExitPoint = grid[Mathf.RoundToInt(exitStartX + (exitCountX - 1) / 2f), gridSizeY - 1].worldPosition + Vector3.forward * nodeDiameter;
                 exitCountX = 1;
             }
         }

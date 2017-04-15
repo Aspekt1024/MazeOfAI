@@ -200,7 +200,6 @@ public class MazeWallPlacement
         }
         else
         {
-            Debug.Log("checking");
             if (mazeGen.Maze[row, col].westWall && !(col > 0 && mazeGen.Maze[row, col - 1].southWall))
             {
                 psp.scale += Vector3.right * wallWidth / 2;
