@@ -16,7 +16,13 @@ public class PlayerActions : MonoBehaviour {
         InputHandler input = player.input;
         if (input.ActionPressed(InputHandler.ActionInput.Jump))
         {
-            Instantiate(Resources.Load("Spawnables/Capsule"), transform.position + Vector3.down * 0.6f, Quaternion.identity, transform);
+            GameObject resParent = GameObject.FindGameObjectWithTag("Resources");
+            if (resParent == null)
+            {
+                resParent = new GameObject("Resources");
+                resParent.tag = "Resources";
+            }
+            Instantiate(Resources.Load("Spawnables/Capsule"), transform.position + Vector3.down * 0.6f, Quaternion.identity, resParent.transform);
         }
     }
 }

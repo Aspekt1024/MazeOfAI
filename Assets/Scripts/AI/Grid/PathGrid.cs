@@ -6,14 +6,10 @@ public class PathGrid : MonoBehaviour {
 
     public bool DisplayGrid;
     
-    public Vector3 EntryPoint;
-    public Vector3 ExitPoint;
-    public Vector3[] Corners = new Vector3[4];
-
     public bool GridGenerated;
+    public Vector2 gridWorldSize;
 
     private Level level;
-    private Vector2 gridWorldSize;
     private float nodeRadius;
     private int obstacleProximityPenalty = 10;
     
@@ -108,7 +104,6 @@ public class PathGrid : MonoBehaviour {
     private void Awake()
     {
         level = GameObject.FindGameObjectWithTag("Scripts").GetComponent<Level>();
-        gameObject.AddComponent<PathRequestManager>();
         SetupUnwalkableMask();
         SetupTerrainPenalties();
     }
@@ -142,14 +137,6 @@ public class PathGrid : MonoBehaviour {
                 Gizmos.color = (node.walkable ? Gizmos.color : Color.red);
                 Gizmos.DrawCube(node.worldPosition, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
             }
-
-            Gizmos.color = Color.cyan;
-            foreach (var corner in Corners)
-            {
-                Gizmos.DrawCube(corner, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
-            }
-            Gizmos.DrawCube(EntryPoint, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
-            Gizmos.DrawCube(ExitPoint, new Vector3(1, 0.1f, 1) * (nodeDiameter - 0.05f));
         }
     }
 
@@ -196,67 +183,11 @@ public class PathGrid : MonoBehaviour {
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y, movementPenalty);
             }
         }
-        GetEntrancePoints();
-        GetCornerPoints();
+        
         BlurPenalties(1);
         GridGenerated = true;
     }
-
-    private void GetEntrancePoints()
-    {
-        int entryStartX = 0;
-        int entryCountX = 1;
-        int exitStartX = 0;
-        int exitCountX = 1;
-
-        for (int x = 0; x < gridSizeX; x++)
-        {
-            if (grid[x, 0].walkable)
-            {
-                if (entryStartX == 0)
-                    entryStartX = x;
-                else
-                    entryCountX++;
-            }
-            else if (entryCountX < 3)
-            {
-                entryStartX = 0;
-                entryCountX = 1;
-            }
-            else
-            {
-                EntryPoint = grid[Mathf.RoundToInt(entryStartX + (entryCountX - 1) / 2f), 0].worldPosition + Vector3.back * nodeDiameter;
-                entryCountX = 1;
-            }
-
-            if (grid[x, gridSizeY - 1].walkable)
-            {
-                if (exitStartX == 0)
-                    exitStartX = x;
-                else
-                    exitCountX++;
-            }
-            else if (exitCountX < 3)
-            {
-                exitStartX = 0;
-                exitCountX = 1;
-            }
-            else
-            {
-                ExitPoint = grid[Mathf.RoundToInt(exitStartX + (exitCountX - 1) / 2f), gridSizeY - 1].worldPosition + Vector3.forward * nodeDiameter;
-                exitCountX = 1;
-            }
-        }
-    }
-
-    private void GetCornerPoints()
-    {
-        Corners[0] = grid[0, 0].worldPosition + new Vector3(-nodeDiameter, 0, -nodeDiameter);
-        Corners[1] = grid[0, gridSizeY - 1].worldPosition + new Vector3(-nodeDiameter, 0, nodeDiameter);
-        Corners[2] = grid[gridSizeX - 1, 0].worldPosition + new Vector3(nodeDiameter, 0, -nodeDiameter);
-        Corners[3] = grid[gridSizeX - 1, gridSizeY - 1].worldPosition + new Vector3(nodeDiameter, 0, nodeDiameter);
-    }
-
+    
     private void BlurPenalties(int blurSize)
     {
         int kernelSize = 2 * blurSize + 1;
@@ -307,5 +238,55 @@ public class PathGrid : MonoBehaviour {
                     penaltyMin = blurredPenalty;
             }
         }
+    }
+    
+    public Vector3[] GetMazeEntrances()
+    {
+        List<Vector3> entrances = new List<Vector3>();
+
+        int entryStartX = 0;
+        int entryCountX = 1;
+        int exitStartX = 0;
+        int exitCountX = 1;
+
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            if (grid[x, 0].walkable)
+            {
+                if (entryStartX == 0)
+                    entryStartX = x;
+                else
+                    entryCountX++;
+            }
+            else if (entryCountX < 3)
+            {
+                entryStartX = 0;
+                entryCountX = 1;
+            }
+            else
+            {
+                entrances.Add(grid[Mathf.RoundToInt(entryStartX + (entryCountX - 1) / 2f), 0].worldPosition);
+                entryCountX = 1;
+            }
+
+            if (grid[x, gridSizeY - 1].walkable)
+            {
+                if (exitStartX == 0)
+                    exitStartX = x;
+                else
+                    exitCountX++;
+            }
+            else if (exitCountX < 3)
+            {
+                exitStartX = 0;
+                exitCountX = 1;
+            }
+            else
+            {
+                entrances.Add(grid[Mathf.RoundToInt(exitStartX + (exitCountX - 1) / 2f), gridSizeY - 1].worldPosition + Vector3.forward * nodeDiameter);
+                exitCountX = 1;
+            }
+        }
+        return entrances.ToArray();
     }
 }

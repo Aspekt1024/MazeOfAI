@@ -35,9 +35,9 @@ public class MazeGenerator {
     }
     private CellPos currentCell;
 
-    public MazeGenerator()
+    public MazeGenerator(Maze mazeScriptRef)
     {
-        mazeScript = GameObject.FindGameObjectWithTag("Maze").GetComponent<Maze>();
+        mazeScript = mazeScriptRef;
     }
 
     public void Generate(int numRows, int numCols, int startCol = -1, int endCol = -1)

@@ -7,18 +7,32 @@ public class UnitPathfinder : MonoBehaviour {
 
     private float turnDist = 0.5f;
     private float stoppingDist = 2f;
-    
+
     private Unit unit;
     private Path path;
     private Coroutine followRoutine = null;
     private Coroutine updateRoutine = null;
-    
+    private WorldGridManager worldGrid;
+    private Section currentSection;
+    private bool requirePathUpdate;
+
     private const float pathUpdateMoveThreshold = 0.7f;
     private const float minPathUpdateTime = 0.25f;
 
     private void Awake()
     {
         unit = GetComponent<Unit>();
+        worldGrid = GameObject.FindGameObjectWithTag("Scripts").GetComponent<WorldGridManager>();
+    }
+
+    private void Update()
+    {
+        Section section = worldGrid.GetSectionFromWorldPoint(transform.position);
+        if (section != null && section != currentSection)
+        {
+            requirePathUpdate = true;
+            currentSection = section;
+        }
     }
 
     public void FindPath()
@@ -44,10 +58,12 @@ public class UnitPathfinder : MonoBehaviour {
         {
             if (Time.timeSinceLevelLoad < 2f) yield return new WaitForSeconds(2f);
             yield return new WaitForSeconds(minPathUpdateTime);
+
             if (unit.Target == null) continue;
             timeSinceUpdate += Time.deltaTime;
-            if ((unit.Target.position - targetOldPos).sqrMagnitude > squareMoveThreshold || timeSinceUpdate > 0.5f)
+            if ((unit.Target.position - targetOldPos).sqrMagnitude > squareMoveThreshold || timeSinceUpdate > 0.5f || requirePathUpdate)
             {
+                requirePathUpdate = false;
                 PathRequestManager.RequestPath(new PathRequest(transform.position, unit.Target.position, gameObject, OnPathFound));
                 targetOldPos = unit.Target.position;
             }
@@ -106,7 +122,7 @@ public class UnitPathfinder : MonoBehaviour {
                 if (pathIndex >= path.slowDownIndex && stoppingDist > 0)
                 {
                     speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos2D) / stoppingDist);
-                    if (speedPercent < 0.01f || Vector3.Distance(unit.Target.position, transform.position) < 1.5f)
+                    if (speedPercent < 0.01f || Vector3.Distance(unit.Target.position, transform.position) < 1.5f)  // TODO check for line of sight
                         followingPath = false;
                 }
 

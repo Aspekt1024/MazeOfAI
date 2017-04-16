@@ -6,13 +6,24 @@ using UnityEngine;
 public class Pathfinder : MonoBehaviour {
     
     private PathGrid grid;
+    private PathGridSection startSection;
+    private PathGridSection endSection;
     private bool processingPath;
     private bool gridGenRequested;
 
+    private Coroutine pathSearchCoroutine = null;
+    private Coroutine pathSearchProcess = null;
+    private PathRequest request;
+    private Action<PathResult> callback;
+
+    private bool pathFound;
+    private Vector3[] waypoints;
+
+    private WorldGridManager worldGrid;
+
     private void Start()
     {
-        GameObject mazeObj = GameObject.FindGameObjectWithTag("Maze");
-        grid = mazeObj.GetComponent<PathGrid>();
+        worldGrid = GetComponent<WorldGridManager>();
     }
     
     private void Update()
@@ -21,41 +32,89 @@ public class Pathfinder : MonoBehaviour {
         gridGenRequested = true;
     }
 
-    public void FindPath(PathRequest request, Action<PathResult> callback)
-    {
-        StopCoroutine("PathSearch");
-        StartCoroutine(PathSearch(request, callback));
-    }
-
-    private IEnumerator PathSearch(PathRequest request, Action<PathResult> callback)
+    public void FindPath(PathRequest req, Action<PathResult> cb)
     {
         processingPath = true;
+        request = req;
+        callback = cb;
+
+        startSection = worldGrid.GetSectionFromWorldPoint(request.pathStart);
+        endSection = worldGrid.GetSectionFromWorldPoint(request.pathEnd);
+
+        if (pathSearchProcess != null)
+            StopCoroutine(SearchProcess());
+
+        pathSearchProcess = StartCoroutine(SearchProcess());
+    }
+
+    private IEnumerator SearchProcess()
+    {
+        if (pathSearchCoroutine != null)
+            StopCoroutine(pathSearchCoroutine);
+
+        if (startSection == null || endSection == null)
+        {
+            processingPath = false;
+            callback(new PathResult(new Vector3[0], false, request.callback));
+        }
+
+        if (startSection == endSection)
+        {
+            grid = startSection.grid;
+            yield return pathSearchCoroutine = StartCoroutine(PathSearch());
+            callback(new PathResult(waypoints, pathFound, request.callback));
+            processingPath = false;
+        }
+        else
+        {
+
+
+            processingPath = false;
+            callback(new PathResult(new Vector3[0], false, request.callback));
+
+
+            //// see if any points in the next section are in line of sight
+            //Vector3 newEndpoint = request.pathEnd;
+
+            //Vector3 pathEnd = request.pathEnd;
+            ////request.pathEnd = endSection.grid.EntryPoint;
+            //endSection = worldGrid.GetSectionFromWorldPoint(request.pathEnd);
+            //grid = startSection.grid;
+            //pathSearchCoroutine = StartCoroutine(PathSearch());
+
+            //AddEndNodeToWaypoints(pathEnd);
+            //callback(new PathResult(waypoints, pathFound, request.callback));
+            //processingPath = false;
+        }
+
+    }
+
+    private IEnumerator PathSearch()
+    {
         while (!grid.GridGenerated)
         {
             yield return new WaitForSeconds(0.5f);
         }
-
-        Vector3[] waypoints = new Vector3[0];
+        
         PathNode targetNode = grid.GetNearestWalkableNode(request.pathEnd);
         PathNode startNode = grid.GetNearestWalkableNode(request.pathStart);
-        bool pathFound = false;
+        waypoints = new Vector3[0];
+        pathFound = false;
         
         if (startNode.walkable && targetNode.walkable)
         {
             Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
-            yield return null;
 
-            int iterations = 0;
-            int maxIterations = 2000;   // TODO this will probably become machine/device dependent
+            float timer = Time.realtimeSinceStartup;
+            float maxTime = .01f;
             while (openSet.Count > 0)
             {
-                iterations++;
-                if (iterations > maxIterations)
+                if (Time.realtimeSinceStartup > timer + maxTime)
                 {
-                    iterations = 0;
                     yield return null;
+                    timer = Time.realtimeSinceStartup;
                 }
                 PathNode currentNode = openSet.RemoveFirst();
                 closedSet.Add(currentNode);
@@ -91,10 +150,17 @@ public class Pathfinder : MonoBehaviour {
             waypoints = RetracePath(startNode, targetNode);
             pathFound = waypoints.Length > 0;
         }
+    }
 
-        callback(new PathResult(waypoints, pathFound, request.callback));
-        yield return null;
-        processingPath = false;
+    private void AddEndNodeToWaypoints(Vector3 endNode)
+    {
+        Vector3[] newWaypoints = new Vector3[waypoints.Length + 1];
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            newWaypoints[i] = waypoints[i];
+        }
+        newWaypoints[waypoints.Length] = endNode;
+        waypoints = newWaypoints;
     }
 
     private int GetDistance(PathNode nodeA, PathNode nodeB)

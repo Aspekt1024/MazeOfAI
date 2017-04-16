@@ -46,10 +46,6 @@ public class MazeWallPlacement
 
     private void PlaceCell(int row, int col)
     {
-        float xPos = xStart + col * wallLength;
-        float zPos = zStart + row * wallLength;
-        float yPos = wallHeight / 2f;
-
         if (mazeGen.Maze[row, col].northWall)
         {
             PosScalePair psp = GetNorthWallTf(row, col);

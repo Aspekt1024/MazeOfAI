@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Maze : MonoBehaviour {
+public class Maze : Section {
 
-    public int rows = 10;
-    public int cols = 10;
     public int startCol = 8;
     public int endCol = 2;
 
@@ -13,27 +11,15 @@ public class Maze : MonoBehaviour {
     public float wallWidth = 0.5f;
     public float wallHeight = 1.5f;
     
-    [HideInInspector]
-    public PathGrid grid;
-
-    private Level level;
-
-    private void Awake ()
+    public override void DeploySection()
     {
-        level = GameObject.FindGameObjectWithTag("Scripts").GetComponent<Level>();
-
-        MazeGenerator generator = new MazeGenerator();
+        MazeGenerator generator = new MazeGenerator(this);
         generator.Generate(rows, cols, startCol, endCol);
     }
-
-    private void Start()
-    {
-        grid = gameObject.AddComponent<PathGrid>();
-        grid.CreateGrid(new Vector2(rows, cols) * wallLength / level.SegmentLength, transform.position);
-    }
-	
+    
     private void OnDrawGizmos()
     {
+        AlignSectionToGrid();
         Gizmos.DrawWireCube(transform.position + Vector3.up * wallHeight / 2, new Vector3(cols * wallLength, wallHeight, rows * wallLength));
 
         if (startCol >= cols) startCol = cols - 1;
@@ -46,5 +32,4 @@ public class Maze : MonoBehaviour {
             Gizmos.DrawWireCube(transform.position + new Vector3(endCol * wallLength - (cols - 1) * wallLength / 2, wallHeight / 2, rows * wallLength / 2), new Vector3(wallLength, wallHeight, wallWidth));
 
     }
-
 }
