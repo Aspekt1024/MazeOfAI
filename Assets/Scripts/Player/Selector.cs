@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 public class Selector : MonoBehaviour {
     
@@ -14,16 +15,27 @@ public class Selector : MonoBehaviour {
     private bool mouseDown;
     private Vector2 mousePos;
 
+    private RectTransform SelectionBox;
+    private CanvasGroup SelectionCanvas;
+
     private void Awake()
     {
         SelectedObj = new Selectable[maxSelectedObjects];
         SetupIndicators();
+
+        SelectionBox = GameObject.FindGameObjectWithTag("SelectionBox").GetComponent<RectTransform>();
+        SelectionCanvas = SelectionBox.GetComponent<CanvasGroup>();
+        SelectionCanvas.alpha = 0;
     }
 
     private void Update()
     {
+        if (mouseDown)
+            DrawSelectionBox();
+
         GetMouseInput();
         DrawSelectionIndicator();
+
     }
 
     private void GetMouseInput()
@@ -40,6 +52,7 @@ public class Selector : MonoBehaviour {
         {
             ClearSelections();
             mouseDown = false;
+            SelectionCanvas.alpha = 0;
 
             Vector2 clickPos = Input.mousePosition;
             if (Vector2.Distance(mousePos, clickPos) < 0.2f)
@@ -115,9 +128,31 @@ public class Selector : MonoBehaviour {
             }
             else
             {
+                // Favour units over buildings
+                bool unitsInSelection = false;
+                var units = from obj in objects
+                        where obj.GetComponentInParent<Unit>() != null
+                        select obj;
+
+                if (units != null && units.Count<Collider>() > 0)
+                    unitsInSelection = true;
+
+                int selectionNum = 0;
                 for (int i = 0; i < objects.Length; i++)
                 {
-                    SelectObject(i, objects[i].transform);
+                    if (unitsInSelection)
+                    {
+                        if (objects[i].GetComponentInParent<Unit>() != null)
+                        {
+                            SelectObject(selectionNum, objects[i].transform);
+                            selectionNum++;
+                        }
+                    }
+                    else
+                    {
+                        SelectObject(selectionNum, objects[i].transform);
+                        selectionNum++;
+                    }
                 }
             }
         }
@@ -178,5 +213,22 @@ public class Selector : MonoBehaviour {
             SelectedObj[i] = null;
             indicators[i].position = Vector2.down;
         }
+    }
+
+    private void DrawSelectionBox()
+    {
+        SelectionCanvas.alpha = 1;
+        SelectionBox.sizeDelta = new Vector2(Mathf.Abs(Input.mousePosition.x - mousePos.x), Mathf.Abs(Input.mousePosition.y - mousePos.y));
+
+        float xPos = mousePos.x;
+        float yPos = mousePos.y;
+
+        if (mousePos.x > Input.mousePosition.x)
+            xPos -= SelectionBox.sizeDelta.x;
+
+        if (mousePos.y < Input.mousePosition.y)
+            yPos += SelectionBox.sizeDelta.y;
+
+        SelectionBox.position = new Vector3(xPos, yPos, 0);
     }
 }
