@@ -13,7 +13,7 @@ public class InputHandler {
 
     public enum ActionInput
     {
-        Jump
+        BuildSpring, Cancel
     }
 
     static Dictionary<KeyboardInput, KeyCode> keyDict = new Dictionary<KeyboardInput, KeyCode>
@@ -27,7 +27,8 @@ public class InputHandler {
 
     static Dictionary<ActionInput, KeyCode> actionDict = new Dictionary<ActionInput, KeyCode>
     {
-        { ActionInput.Jump, KeyCode.Space }
+        { ActionInput.Cancel, KeyCode.Escape },
+        { ActionInput.BuildSpring, KeyCode.Alpha1 }
     };
 
     private Dictionary<ActionInput, bool> actionPressed = new Dictionary<ActionInput, bool>();

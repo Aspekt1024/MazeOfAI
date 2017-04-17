@@ -23,6 +23,7 @@ public class CapsuleSpring : Building {
         spawnsPerSecond = 1;
         capsulesSpawned = 0;
         Name = "Capsule Spring";
+        ObjRadius = 26;
 
         CapsuleModel = Resources.Load<GameObject>("Spawnables/Capsule");
     }

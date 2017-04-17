@@ -40,6 +40,7 @@ public class Selector : MonoBehaviour {
 
     private void GetMouseInput()
     {
+        // TODO get input from inputhandler
         if (Input.GetMouseButtonDown(0))
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
