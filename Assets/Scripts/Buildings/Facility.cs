@@ -37,8 +37,6 @@ public class Facility : Building {
             }
         }
     }
-    
-    // TODO implement GUI displays
 
     private void TrainUnit()
     {

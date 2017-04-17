@@ -5,7 +5,10 @@ using UnityEngine;
 public class PathGrid : MonoBehaviour {
 
     public bool DisplayGrid;
-    
+
+    public PathNode[,] grid;
+    public int gridSizeX;
+    public int gridSizeY;
     public bool GridGenerated;
     public Vector2 gridWorldSize;
 
@@ -15,10 +18,7 @@ public class PathGrid : MonoBehaviour {
     
     private LayerMask unwalkableMask;
     private LayerMask walkableMask;
-    private PathNode[,] grid;
     private float nodeDiameter;
-    private int gridSizeX;
-    private int gridSizeY;
 
     private int penaltyMin = int.MaxValue;
     private int penaltyMax = int.MinValue;

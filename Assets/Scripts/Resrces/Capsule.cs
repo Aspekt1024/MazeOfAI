@@ -11,8 +11,11 @@ public class Capsule : MonoBehaviour {
     {
         if (other.collider.tag == "Building" && !Landed)
         {
-            GameData.Instance.Capsules += 1;
-            Destroy(gameObject);
+            if (other.collider.GetComponentInParent<Facility>() != null)
+            {
+                GameData.Instance.Capsules++;
+                Destroy(gameObject);
+            }
         }
         else if (other.collider.tag == "Terrain")
         {
