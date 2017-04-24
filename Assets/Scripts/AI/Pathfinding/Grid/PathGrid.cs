@@ -29,7 +29,16 @@ public class PathGrid : MonoBehaviour {
     {
         {"MazeWall"}, {"BuildingBounds"}
     };
-    
+
+    private void OnEnable()
+    {
+        GridEvents.OnPlaceBuilding += BuildingPlaced;
+    }
+    private void OnDisable()
+    {
+        GridEvents.OnPlaceBuilding -= BuildingPlaced;
+    }
+
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
     {
         float percentX = Mathf.Clamp01((worldPos.x - transform.position.x + gridWorldSize.x / 2) / gridWorldSize.x);
@@ -288,5 +297,11 @@ public class PathGrid : MonoBehaviour {
             }
         }
         return entrances.ToArray();
+    }
+
+    private void BuildingPlaced()
+    {
+        
+        CreateGrid(gridWorldSize / level.SegmentLength, transform.position);
     }
 }

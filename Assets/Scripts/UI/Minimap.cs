@@ -121,7 +121,7 @@ public class Minimap : MonoBehaviour {
                 int yPos = Mathf.RoundToInt(miniMapScale.y * y / (grid.gridSizeY - 1));
                 if (!grid.grid[x, y].walkable)
                 {
-                    texture.SetPixel(xPos, yPos, Color.red);
+                    texture.SetPixel(xPos, yPos, Color.blue);
                 }
                 else
                 {

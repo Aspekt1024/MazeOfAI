@@ -13,7 +13,9 @@ public class InputHandler {
 
     public enum ActionInput
     {
-        BuildSpring, Cancel
+        Build,
+        BuildSpring, BuildFacility,
+        Cancel
     }
 
     static Dictionary<KeyboardInput, KeyCode> keyDict = new Dictionary<KeyboardInput, KeyCode>
@@ -28,7 +30,9 @@ public class InputHandler {
     static Dictionary<ActionInput, KeyCode> actionDict = new Dictionary<ActionInput, KeyCode>
     {
         { ActionInput.Cancel, KeyCode.Escape },
-        { ActionInput.BuildSpring, KeyCode.Alpha1 }
+        { ActionInput.Build, KeyCode.B },
+        { ActionInput.BuildSpring, KeyCode.Alpha1 },
+        { ActionInput.BuildFacility, KeyCode.Alpha2 }
     };
 
     private Dictionary<ActionInput, bool> actionPressed = new Dictionary<ActionInput, bool>();
@@ -40,9 +44,7 @@ public class InputHandler {
 
     public bool ActionPressed(ActionInput actionKey)
     {
-        if (!actionPressed[actionKey]) return false;
-        actionPressed[actionKey] = false;
-        return true;
+        return Input.GetKeyDown(actionDict[actionKey]);
     }
 
     public bool KeyPressed(KeyboardInput key)

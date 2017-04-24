@@ -25,8 +25,8 @@ public class Drone : Unit {
     {
         Name = "Drone";
         elevation = 0.5f;
-        baseSpeed = 5f;
-        baseTurnSpeed = 3f;
+        baseSpeed = 7f;
+        baseTurnSpeed = 15f;
 
         task = WorkerTasks.Gather;
         state = DroneStates.Idle;

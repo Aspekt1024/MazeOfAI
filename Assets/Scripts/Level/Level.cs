@@ -11,6 +11,6 @@ public class Level : MonoBehaviour {
     
 	private void Start ()
     {
-
+        GameData.Instance.Capsules = 100;
     }
 }
