@@ -6,7 +6,7 @@ using System;
 public class UnitPathfinder : MonoBehaviour {
 
     private float turnDist = 0.5f;
-    private float stoppingDist = 2f;
+    private float stoppingDist = 1f;
 
     private Unit unit;
     private Path path;
@@ -122,7 +122,11 @@ public class UnitPathfinder : MonoBehaviour {
                 if (pathIndex >= path.slowDownIndex && stoppingDist > 0)
                 {
                     speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos2D) / stoppingDist);
-                    if (speedPercent < 0.01f || Vector3.Distance(unit.Target.position, transform.position) < 1.5f)  // TODO check for line of sight
+                    if (unit.Target == null)
+                    {
+                        yield break;
+                    }
+                    if (speedPercent < 0.01f || Vector3.Distance(unit.Target.position, transform.position) < 1f)  // TODO check for line of sight
                         followingPath = false;
                 }
 

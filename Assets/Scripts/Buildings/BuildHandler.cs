@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 using ActionInput = InputHandler.ActionInput;
 
@@ -31,13 +32,13 @@ public class BuildHandler : MonoBehaviour {
 
             if (hit.collider != null)
             {
-                building.transform.position = GetSnappedPos(hit.point);
+                building.transform.position = Positioning.GetSnappedPosition(hit.point);
             }
 
             if (Input.GetMouseButtonDown(0))
             {
-                buildMode = false;
-                DeployBuilding(hit.point);
+                ExitBuildMode();
+                DeployBuilding();
             }
         }
         else
@@ -55,9 +56,15 @@ public class BuildHandler : MonoBehaviour {
     {
         if (!placingBuilding) return;
 
+        ExitBuildMode();
+        Destroy(building.gameObject);
+    }
+
+    private void ExitBuildMode()
+    {
         buildMode = false;
         placingBuilding = false;
-        Destroy(building.gameObject);
+        Cursor.visible = true;
     }
 
     private void CheckInputs()
@@ -76,6 +83,7 @@ public class BuildHandler : MonoBehaviour {
 
         if (hit.collider == null) return;
 
+        Cursor.visible = false;
         placingBuilding = true;
         building = Instantiate(buildingPrefab, hit.point, Quaternion.identity, buildingParent.transform).transform;
         ColourBuilding();
@@ -84,8 +92,6 @@ public class BuildHandler : MonoBehaviour {
     private bool GetBuildingPrefab()
     {
         bool foundPrefab = false;
-
-        InputHandler input = player.input;
         string building = string.Empty;
 
         if (player.input.ActionPressed(ActionInput.BuildSpring))
@@ -114,19 +120,12 @@ public class BuildHandler : MonoBehaviour {
         }
     }
 
-    private void DeployBuilding(Vector3 point)
+    private void DeployBuilding()
     {
+        Vector3 pos = building.position;
         Destroy(building.gameObject);
-        building = Instantiate(buildingPrefab, point, Quaternion.identity, transform).transform;
-        
-        buildMode = false;
-        placingBuilding = false;
-        GridEvents.PlaceBuilding();
-    }
-
-    private Vector3 GetSnappedPos(Vector3 pos)
-    {
-        // TODO snap
-        return new Vector3(pos.x, 0f, pos.z);
+        building = Instantiate(buildingPrefab, pos, Quaternion.identity, transform).transform;
+        ExitBuildMode();
+        GridEvents.PlaceBuilding(); // TODO give cells instead
     }
 }

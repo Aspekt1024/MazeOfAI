@@ -6,7 +6,7 @@ public class Level : MonoBehaviour {
 
     // Pathfinding editor variables
     // TODO create custom inspector for Level
-    public float SegmentLength = 2f;
+    public float SegmentLength = 1f;
     public int SegmentDivisions = 5;
     
 	private void Start ()

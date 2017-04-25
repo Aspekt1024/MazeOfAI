@@ -59,6 +59,8 @@ public class Drone : Unit {
         CheckIfAlreadyIntersectingTarget();
         CancelActionsIfSetToIdle();
 
+        CheckTargetsExist();
+
         if (state == DroneStates.Idle && task == WorkerTasks.Gather)
         {
             FindResourceToGather();
@@ -191,6 +193,23 @@ public class Drone : Unit {
                 speedMultiplier = 2f;
                 turnSpeedMultiplier = 4.5f;
                 break;
+        }
+    }
+
+    private void CheckTargetsExist()
+    {
+        if (Target == null && state == DroneStates.Gathering)
+        {
+            state = DroneStates.Idle;
+        }
+        if (Target == null && state == DroneStates.Building)
+        {
+            Target = FindFacilityEntry();
+            pathfinder.FindPath();
+        }
+        if (cargo == null && state == DroneStates.Building)
+        {
+            state = DroneStates.Idle;
         }
     }
 }
