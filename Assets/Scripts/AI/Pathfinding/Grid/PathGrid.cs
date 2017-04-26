@@ -6,6 +6,18 @@ public class PathGrid : MonoBehaviour {
 
     public bool DisplayGrid;
 
+    private struct Coord
+    {
+        public int x;
+        public int y;
+
+        public Coord(int coordX, int coordY)
+        {
+            x = coordX;
+            y = coordY;
+        }
+    }
+
     public PathNode[,] grid;
     public int gridSizeX;
     public int gridSizeY;
@@ -41,19 +53,24 @@ public class PathGrid : MonoBehaviour {
 
     public PathNode GetNodeFromWorldPoint(Vector3 worldPos)
     {
-        float percentX = Mathf.Clamp01((worldPos.x - transform.position.x + gridWorldSize.x / 2) / gridWorldSize.x);
-        float percentY = Mathf.Clamp01((worldPos.z - transform.position.z + gridWorldSize.y / 2) / gridWorldSize.y);
+        Coord coord = GetGridCoords(worldPos);
+        return grid[coord.x, coord.y];
+    }
+
+    private Coord GetGridCoords(Vector3 pos)
+    {
+        float percentX = Mathf.Clamp01((pos.x - transform.position.x + (gridWorldSize.x - level.SegmentLength) / 2) / (gridWorldSize.x - level.SegmentLength));
+        float percentY = Mathf.Clamp01((pos.z - transform.position.z + (gridWorldSize.y - level.SegmentLength) / 2) / (gridWorldSize.y - level.SegmentLength));
         int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
-        return grid[x, y];
+        return new Coord(x, y);
     }
 
     public PathNode GetNearestWalkableNode(Vector3 worldPos)
     {
-        float percentX = Mathf.Clamp01((worldPos.x - transform.position.x + gridWorldSize.x / 2) / gridWorldSize.x);
-        float percentY = Mathf.Clamp01((worldPos.z - transform.position.z + gridWorldSize.y / 2) / gridWorldSize.y);
-        int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
-        int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
+        Coord gridXY = GetGridCoords(worldPos);
+        int x = gridXY.x;
+        int y = gridXY.y;
 
         if (grid[x, y].walkable)
             return grid[x, y];
@@ -174,6 +191,10 @@ public class PathGrid : MonoBehaviour {
             {
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                 bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
+                if (walkable)
+                {
+                    walkable = IsReachableHeight(worldPoint);
+                }
 
                 int movementPenalty = 0;
                 
@@ -195,6 +216,20 @@ public class PathGrid : MonoBehaviour {
         
         BlurPenalties(1);
         GridGenerated = true;
+    }
+
+    private bool IsReachableHeight(Vector3 worldPoint)
+    {
+        // TODO make this look for ramps etc (gradients)
+        Ray ray = new Ray()
+        {
+            origin = worldPoint + Vector3.up * 10,
+            direction = Vector3.down
+        };
+        if (Physics.Raycast(ray, 9.8f, 1 << LayerMask.NameToLayer("Terrain")))
+            return false;
+        else
+            return true;
     }
     
     private void BlurPenalties(int blurSize)
@@ -301,7 +336,6 @@ public class PathGrid : MonoBehaviour {
 
     private void BuildingPlaced()
     {
-        
         CreateGrid(gridWorldSize / level.SegmentLength, transform.position);
     }
 }

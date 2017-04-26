@@ -95,6 +95,7 @@ public class Drone : Unit {
             if (cargo !=  null && cargo.GetComponent<Capsule>() != null)
             {
                 cargo.GetComponent<Capsule>().Assigned = false;
+                cargo.GetComponent<Collider>().enabled = false;
                 cargo = null;
             }
             pathfinder.Stop();
@@ -155,6 +156,7 @@ public class Drone : Unit {
             case DroneStates.Gathering:
                 state = DroneStates.Building;
                 cargo = Target;
+                cargo.GetComponent<Collider>().enabled = false;
                 Target = FindFacilityEntry();
                 pathfinder.FindPath();
                 break;

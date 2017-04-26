@@ -14,11 +14,13 @@ public class BuildHandler : MonoBehaviour {
     private Camera playerCam;
     private Transform building;
     private GameObject buildingPrefab;
+    private PlacementGrid placementGrid;
     
     private void Awake() {
 
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         playerCam = player.GetComponentInChildren<Camera>();
+        placementGrid = gameObject.AddComponent<PlacementGrid>();
     }
 	
 	private void Update () {
@@ -65,6 +67,7 @@ public class BuildHandler : MonoBehaviour {
         buildMode = false;
         placingBuilding = false;
         Cursor.visible = true;
+        placementGrid.Disable();
     }
 
     private void CheckInputs()
@@ -86,6 +89,7 @@ public class BuildHandler : MonoBehaviour {
         Cursor.visible = false;
         placingBuilding = true;
         building = Instantiate(buildingPrefab, hit.point, Quaternion.identity, buildingParent.transform).transform;
+        placementGrid.SetNewBounds(building.gameObject);
         ColourBuilding();
     }
 
@@ -128,4 +132,5 @@ public class BuildHandler : MonoBehaviour {
         ExitBuildMode();
         GridEvents.PlaceBuilding(); // TODO give cells instead
     }
+
 }
