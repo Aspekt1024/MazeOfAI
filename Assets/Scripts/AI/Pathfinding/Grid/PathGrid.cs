@@ -6,7 +6,7 @@ public class PathGrid : MonoBehaviour {
 
     public bool DisplayGrid;
 
-    private struct Coord
+    public struct Coord
     {
         public int x;
         public int y;
@@ -44,7 +44,7 @@ public class PathGrid : MonoBehaviour {
 
     private void OnEnable()
     {
-        GridEvents.OnPlaceBuilding += BuildingPlaced;
+        GridEvents.OnPlaceBuilding += BuildingPlaced;   // TODO NOt used
     }
     private void OnDisable()
     {
@@ -64,6 +64,14 @@ public class PathGrid : MonoBehaviour {
         int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
         return new Coord(x, y);
+    }
+
+    public void UpdateUnwalkable(Coord[] coords)
+    {
+        foreach(Coord c in coords)
+        {
+            grid[c.x, c.y].walkable = false;
+        }
     }
 
     public PathNode GetNearestWalkableNode(Vector3 worldPos)

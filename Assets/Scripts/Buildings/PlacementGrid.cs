@@ -12,6 +12,8 @@ public class PlacementGrid : MonoBehaviour {
     private const int numPieces = 16;
     private Transform[] gridPieces = new Transform[numPieces];
 
+    private bool isValid;
+
     private void Awake()
     {
         CreateGridPieces();
@@ -57,6 +59,36 @@ public class PlacementGrid : MonoBehaviour {
         halfExtents = Vector2.zero;
     }
 
+    public bool IsPlacementValid()
+    {
+        return isValid;
+    }
+
+    public void PlaceBuilding()
+    {
+        PathNode topRight = worldGrid.GetNodeFromWorldPoint(building.transform.position + halfExtents);
+        PathNode bottomLeft = worldGrid.GetNodeFromWorldPoint(building.transform.position - halfExtents);
+        
+        int width = topRight.gridX - bottomLeft.gridX + 1;
+        int height = topRight.gridY - bottomLeft.gridY + 1;
+        
+        if (width == 0 || height == 0) return;
+        PathGrid.Coord[] coords = new PathGrid.Coord[width * height];
+
+        int i = 0;
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                coords[i].x = bottomLeft.gridX + x;
+                coords[i].y = bottomLeft.gridY + y;
+                i++;
+            }
+        }
+
+        worldGrid.UpdateUnwalkable(coords);
+    }
+
     public void Disable()
     {
         building = null;
@@ -75,6 +107,7 @@ public class PlacementGrid : MonoBehaviour {
         int height = topRight.gridY - bottomLeft.gridY + 1;
         
         int pieceNum = 0;
+        isValid = true;
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -98,6 +131,7 @@ public class PlacementGrid : MonoBehaviour {
         if (!worldGrid.GetNodeFromWorldPoint(gridPiece.position).walkable)
         {
             colorToSet = Color.red;
+            isValid = false;
         }
 
         gridPiece.GetComponent<MeshRenderer>().material.SetColor(Shader.PropertyToID("_Color"), colorToSet);

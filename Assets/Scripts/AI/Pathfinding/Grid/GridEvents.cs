@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO remove? not currently used.
 public static class GridEvents {
 
     public delegate void GridEvent();

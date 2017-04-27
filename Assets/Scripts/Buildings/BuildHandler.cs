@@ -37,9 +37,8 @@ public class BuildHandler : MonoBehaviour {
                 building.transform.position = Positioning.GetSnappedPosition(hit.point);
             }
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && placementGrid.IsPlacementValid())
             {
-                ExitBuildMode();
                 DeployBuilding();
             }
         }
@@ -126,11 +125,11 @@ public class BuildHandler : MonoBehaviour {
 
     private void DeployBuilding()
     {
+        placementGrid.PlaceBuilding();
         Vector3 pos = building.position;
         Destroy(building.gameObject);
         building = Instantiate(buildingPrefab, pos, Quaternion.identity, transform).transform;
         ExitBuildMode();
-        GridEvents.PlaceBuilding(); // TODO give cells instead
     }
 
 }

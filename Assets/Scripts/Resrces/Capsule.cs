@@ -13,7 +13,6 @@ public class Capsule : MonoBehaviour {
         {
             if (other.collider.GetComponentInParent<Facility>() != null)
             {
-                Debug.Log(other.collider.GetComponentInParent<Building>().name);    // TODO fix this activating for capsule springs
                 GameData.Instance.Capsules++;
                 Destroy(gameObject);
             }
