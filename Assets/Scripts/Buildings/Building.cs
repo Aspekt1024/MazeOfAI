@@ -10,6 +10,12 @@ public class Building : Selectable {
     private void Awake()
     {
         ObjRadius = 70;
+        completed = false;
+    }
+
+    public virtual void Deploy()
+    {
+        completed = true;
     }
 
     private void Update()

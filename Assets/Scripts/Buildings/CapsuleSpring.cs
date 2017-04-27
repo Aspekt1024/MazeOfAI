@@ -30,7 +30,7 @@ public class CapsuleSpring : Building {
 
     private void Update()
     {
-        if (capsulesSpawned == maxCapsules) return;
+        if (capsulesSpawned == maxCapsules || !completed) return;
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer >= 1 / spawnsPerSecond)

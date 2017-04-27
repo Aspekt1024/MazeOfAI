@@ -129,6 +129,7 @@ public class BuildHandler : MonoBehaviour {
         Vector3 pos = building.position;
         Destroy(building.gameObject);
         building = Instantiate(buildingPrefab, pos, Quaternion.identity, transform).transform;
+        building.GetComponent<Building>().Deploy();
         ExitBuildMode();
     }
 
