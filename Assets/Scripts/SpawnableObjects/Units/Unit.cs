@@ -7,6 +7,7 @@ using System;
 public abstract class Unit : Selectable {
 
     public Transform Target;
+    public bool Friendly;
 
     protected bool UnitActive;
     protected float elevation;
@@ -18,13 +19,17 @@ public abstract class Unit : Selectable {
     protected float baseTurnSpeed = 3f;
     protected float turnSpeedMultiplier = 1f;
 
+    protected Health health = new Health();
+
     public abstract void TargetReached();
 
     private void Awake()
     {
         pathfinder = gameObject.AddComponent<UnitPathfinder>();
         xpHandler = gameObject.AddComponent<Experience>();
-        
+
+        health.CurrentHP = 1;
+        health.MaxHP = 1;
         ObjRadius = 25f;
         SetupAttributes();
     }
@@ -62,6 +67,28 @@ public abstract class Unit : Selectable {
         UnitActive = true;
     }
 
+    public bool IsAlive()
+    {
+        return health.IsAlive();
+    }
+    public bool IsDead()
+    {
+        return health.IsDead();
+    }
+
+    public void Hit(int damage)
+    {
+        health.CurrentHP -= damage;
+        if (IsDead())
+        {
+            DestroyUnit();
+        }
+    }
+
+    public virtual void DestroyUnit()
+    {
+        Destroy(gameObject);
+    }
     public abstract void FindAnotherPath();
     public virtual void UpdateAttributesForLevel(int level) { }
 }
