@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Building : Selectable {
-    
+
+    public int GridSizeX = 1;
+    public int GridSizeY = 1;
+
     protected float completion;
     protected bool completed;
 

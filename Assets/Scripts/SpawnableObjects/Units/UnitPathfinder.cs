@@ -120,9 +120,11 @@ public class UnitPathfinder : MonoBehaviour {
 
             if (followingPath)
             {
+                speedPercent = 0;
                 if (pathIndex >= path.slowDownIndex && stoppingDist > 0)
                 {
                     speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos2D) / stoppingDist);
+                    if (float.IsNaN(speedPercent)) speedPercent = 0;
                     if (unit.Target == null)
                     {
                         yield break;
@@ -134,6 +136,7 @@ public class UnitPathfinder : MonoBehaviour {
                 Quaternion targetRotation = Quaternion.LookRotation(new Vector3(path.lookPoints[pathIndex].x, 0, path.lookPoints[pathIndex].z) - new Vector3(pos2D.x, 0, pos2D.y));
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * unit.GetTurnSpeed());
                 transform.rotation = Quaternion.LookRotation(new Vector3(transform.forward.x, -0.4f * speedPercent, transform.forward.z));
+                Debug.Log(transform.forward.x + " " + transform.forward.z + " " + unit.GetSpeed() + " " + speedPercent);
                 transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * unit.GetSpeed() * speedPercent;
             }
 

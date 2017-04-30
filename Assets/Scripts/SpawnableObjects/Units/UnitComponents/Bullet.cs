@@ -20,6 +20,7 @@ public class Bullet : MonoBehaviour {
         {
             otherUnit.Hit(1);
             GetComponent<MeshRenderer>().enabled = false;
+            GetComponent<Collider>().enabled = false;
         }
     }
 

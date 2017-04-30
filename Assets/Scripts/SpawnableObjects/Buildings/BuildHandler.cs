@@ -13,6 +13,7 @@ public class BuildHandler : MonoBehaviour {
     private Player player;
     private Camera playerCam;
     private Transform building;
+    private Building buildingScript;
     private GameObject buildingPrefab;
     private PlacementGrid placementGrid;
     
@@ -35,6 +36,10 @@ public class BuildHandler : MonoBehaviour {
             if (hit.collider != null)
             {
                 building.transform.position = Positioning.GetSnappedPosition(hit.point);
+                if (buildingScript.GridSizeX == 2 && buildingScript.GridSizeY == 2)
+                {
+                    building.transform.position -= new Vector3(0.5f, 0f, 0.5f);
+                }
             }
 
             if (Input.GetMouseButtonDown(0) && placementGrid.IsPlacementValid())
@@ -88,6 +93,7 @@ public class BuildHandler : MonoBehaviour {
         Cursor.visible = false;
         placingBuilding = true;
         building = Instantiate(buildingPrefab, hit.point, Quaternion.identity, buildingParent.transform).transform;
+        buildingScript = building.GetComponent<Building>();
         placementGrid.SetNewBounds(building.gameObject);
         ColourBuilding();
     }
@@ -101,6 +107,8 @@ public class BuildHandler : MonoBehaviour {
             building = "CapsuleSpring";
         if (player.input.ActionPressed(ActionInput.BuildFacility))
             building = "Facility";
+        if (player.input.ActionPressed(ActionInput.BuildTurret))
+            building = "Turret";
 
         buildingPrefab = Resources.Load<GameObject>("Buildings/" + building);
         if (buildingPrefab != null)
@@ -117,7 +125,14 @@ public class BuildHandler : MonoBehaviour {
             {
                 foreach (Transform t in tf)
                 {
-                    t.GetComponent<Renderer>().material = Resources.Load<Material>("Textures/Unbuilt");
+                    if (t.GetComponent<Renderer>() != null)
+                        t.GetComponent<Renderer>().material = Resources.Load<Material>("Textures/Unbuilt");
+                }
+                Transform[] bodyTfs = tf.GetComponentsInChildren<Transform>();
+                foreach (Transform t in bodyTfs)
+                {
+                    if (t.GetComponent<Renderer>() != null)
+                        t.GetComponent<Renderer>().material = Resources.Load<Material>("Textures/Unbuilt");
                 }
             }
         }

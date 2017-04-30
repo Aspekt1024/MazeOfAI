@@ -110,7 +110,7 @@ public class EnemyFighter : Unit {
 
     private void CheckTargetInRange()
     {
-        if (Vector3.Distance(Target.position, transform.position) < shootRange)
+        if (Target != null && Vector3.Distance(Target.position, transform.position) < shootRange)
         {
             state = FighterStates.Attacking;
             pathfinder.ForceTargetReached();

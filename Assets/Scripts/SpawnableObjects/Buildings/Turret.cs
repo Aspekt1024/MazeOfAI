@@ -8,7 +8,7 @@ public class Turret : Building {
     public Cannon cannon;
 
     private Transform target = null;
-    private float turretRange = 5f;
+    private float turretRange = 15f;
 
     private UnitHandler units;
 
@@ -25,6 +25,9 @@ public class Turret : Building {
 
     private void Start()
     {
+        GridSizeX = 2;
+        GridSizeY = 2;
+
         completed = true;
         Name = "Turret";
         ObjRadius = 40;
@@ -36,8 +39,9 @@ public class Turret : Building {
 
     private void Update()
     {
+        if (state == TurretStates.Passive) return;
+
         GetTargetInRange();
-        
         if (target == null)
         {
             state = TurretStates.Idle;
@@ -113,6 +117,21 @@ public class Turret : Building {
         statsList.Add("Mode: " + mode);
 
         return statsList;
+    }
+
+    public override void SetTask(int taskId)
+    {
+        switch (GetEnumFromId<TurretTasks>(taskId))
+        {
+            case TurretTasks.Defensive:
+                if (state == TurretStates.Passive)
+                    state = TurretStates.Idle;
+                break;
+            case TurretTasks.Passive:
+                state = TurretStates.Passive;
+                target = null;
+                break;
+        }
     }
 
     public override Vector3 GetEntryPoint()

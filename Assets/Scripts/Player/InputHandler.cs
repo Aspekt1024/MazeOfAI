@@ -14,7 +14,7 @@ public class InputHandler {
     public enum ActionInput
     {
         Build,
-        BuildSpring, BuildFacility,
+        BuildSpring, BuildFacility, BuildTurret,
         Cancel
     }
 
@@ -32,7 +32,8 @@ public class InputHandler {
         { ActionInput.Cancel, KeyCode.Escape },
         { ActionInput.Build, KeyCode.B },
         { ActionInput.BuildSpring, KeyCode.Alpha1 },
-        { ActionInput.BuildFacility, KeyCode.Alpha2 }
+        { ActionInput.BuildFacility, KeyCode.Alpha2 },
+        { ActionInput.BuildTurret, KeyCode.Alpha3 }
     };
 
     private Dictionary<ActionInput, bool> actionPressed = new Dictionary<ActionInput, bool>();

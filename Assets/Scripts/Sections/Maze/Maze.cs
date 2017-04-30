@@ -21,6 +21,22 @@ public class Maze : Section {
     {
         AlignSectionToGrid();
         Gizmos.DrawWireCube(transform.position + Vector3.up * wallHeight / 2, new Vector3(cols * wallLength, wallHeight, rows * wallLength));
+        
+        for (int i = 1; i < rows; i++)
+        {
+            float xPos = transform.position.x - cols * wallLength / 2;
+            float yPos = wallHeight;
+            float zPos = transform.position.z - rows * wallLength / 2 + wallLength * i;
+            Gizmos.DrawLine(new Vector3(xPos, yPos, zPos), new Vector3(xPos + cols * wallLength, yPos, zPos));
+        }
+
+        for (int i = 0; i < cols; i++)
+        {
+            float xPos = transform.position.x - cols * wallLength / 2 + wallLength * i;
+            float yPos = wallHeight;
+            float zPos = transform.position.z - rows * wallLength / 2;
+            Gizmos.DrawLine(new Vector3(xPos, yPos, zPos), new Vector3(xPos, yPos, zPos + rows * wallLength));
+        }
 
         if (startCol >= cols) startCol = cols - 1;
         if (endCol >= cols) endCol = cols - 1;

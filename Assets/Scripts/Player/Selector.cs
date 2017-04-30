@@ -169,6 +169,7 @@ public class Selector : MonoBehaviour {
         {
             for (int i = 0; i < numObjectsSelected; i++)
             {
+                if (SelectedObj[i] == null) continue;
                 indicators[i].position = new Vector3(SelectedObj[i].transform.position.x, 3f, SelectedObj[i].transform.position.z);
                 indicators[i].Rotate(Vector3.forward * Time.deltaTime * 30f);
                 indicators[i].GetComponent<Projector>().fieldOfView = SelectedObj[i].ObjRadius;

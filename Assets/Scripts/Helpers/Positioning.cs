@@ -22,7 +22,11 @@ public static class Positioning {
 
     public static Vector3 GetSnappedPosition(Vector3 pos)
     {
-        return new Vector3(Mathf.Round(pos.x) + 0.5f, Mathf.Round(pos.y), Mathf.Round(pos.z) + 0.5f);
+        float xPos = Mathf.Round(pos.x) + 0.5f;
+        float yPos = Mathf.Round(pos.y);
+        float zPos = Mathf.Round(pos.z) + 0.5f;
+        
+        return new Vector3(xPos, yPos, zPos);
     }
 
 }
