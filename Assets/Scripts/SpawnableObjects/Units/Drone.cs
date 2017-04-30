@@ -30,6 +30,8 @@ public class Drone : Unit {
 
         task = WorkerTasks.Gather;
         state = DroneStates.Idle;
+
+        Friendly = true;    // TODO set somewhere else (on spawn)
     }
     
     public override List<Task> GetTaskList()

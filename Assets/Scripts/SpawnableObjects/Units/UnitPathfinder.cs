@@ -72,6 +72,7 @@ public class UnitPathfinder : MonoBehaviour {
 
     public void OnPathFound(Vector3[] waypoints, bool pathSuccessful)
     {
+        if (unit == null) return;
         if (pathSuccessful)
         {
             path = new Path(waypoints, transform.position, turnDist, stoppingDist);

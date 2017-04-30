@@ -64,7 +64,7 @@ public class EnemyFighter : Unit {
         CancelActionsIfSetToIdle();
         CheckTargetsExist();
 
-        if (state != FighterStates.Searching && task == FighterTasks.SeekAndDestroy)
+        if (state == FighterStates.Idle && task == FighterTasks.SeekAndDestroy)
         {
             LocateDrone();
         }
@@ -117,7 +117,7 @@ public class EnemyFighter : Unit {
         }
         else
         {
-            if (task == FighterTasks.SeekAndDestroy)
+            if (task == FighterTasks.SeekAndDestroy && state == FighterStates.Attacking)
             {
                 state = FighterStates.Searching;
                 pathfinder.FindPath();
@@ -132,17 +132,6 @@ public class EnemyFighter : Unit {
     public override void SetTask(int taskId)
     {
         task = GetEnumFromId<FighterTasks>(taskId);
-    }
-    
-    private Transform FindFacilityEntry()
-    {
-        Transform facility = FindObjectOfType<Facility>().transform;
-        foreach (Transform tf in facility)
-        {
-            if (tf.tag == "EntryPoint")
-                return tf;
-        }
-        return null;
     }
 
     public override void FindAnotherPath()
