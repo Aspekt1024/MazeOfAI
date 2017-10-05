@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MazeOfAI", "MazeOfAI.csproj", "{A5920526-5BEF-C1DC-2858-01F5E7B870B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MazeOfAI.Editor", "MazeOfAI.Editor.csproj", "{4DE2C044-69D2-4054-72D4-86CE67E62527}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5920526-5BEF-C1DC-2858-01F5E7B870B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5920526-5BEF-C1DC-2858-01F5E7B870B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5920526-5BEF-C1DC-2858-01F5E7B870B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5920526-5BEF-C1DC-2858-01F5E7B870B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DE2C044-69D2-4054-72D4-86CE67E62527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DE2C044-69D2-4054-72D4-86CE67E62527}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DE2C044-69D2-4054-72D4-86CE67E62527}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DE2C044-69D2-4054-72D4-86CE67E62527}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
